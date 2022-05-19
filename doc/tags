@@ -1,0 +1,15 @@
+<Plug>(CybuNext)	cybu.nvim.txt	/*<Plug>(CybuNext)*
+<Plug>(CybuPrev)	cybu.nvim.txt	/*<Plug>(CybuPrev)*
+CybuNext	cybu.nvim.txt	/*CybuNext*
+CybuPrev	cybu.nvim.txt	/*CybuPrev*
+cybu-autocmds	cybu.nvim.txt	/*cybu-autocmds*
+cybu-commands	cybu.nvim.txt	/*cybu-commands*
+cybu-config	cybu.nvim.txt	/*cybu-config*
+cybu-lua	cybu.nvim.txt	/*cybu-lua*
+cybu-mappings	cybu.nvim.txt	/*cybu-mappings*
+cybu-quickstart	cybu.nvim.txt	/*cybu-quickstart*
+cybu.cycle	cybu.nvim.txt	/*cybu.cycle*
+cybu.nvim	cybu.nvim.txt	/*cybu.nvim*
+cybu.nvim.toc	cybu.nvim.txt	/*cybu.nvim.toc*
+cybu.nvim.txt	cybu.nvim.txt	/*cybu.nvim.txt*
+cybu.setup	cybu.nvim.txt	/*cybu.setup*

@@ -1,0 +1,179 @@
+*cybu.nvim.txt*       cybu.nvim for neovim 0.7.0+     Author: Gero Hillebrandt
+================================================================================
+
+TABLE OF CONTENTS                                              *cybu.nvim.toc*
+1.  Introduction               (|cybu.nvim|)
+2.  Quickstart                 (|cybu-quickstart|)
+3.  Configuration              (|cybu-config|)
+4.  Commands                   (|cybu-commands|)
+5.  Mappings                   (|cybu-mappings|)
+6.  Lua functions              (|cybu-lua|)
+7.  Auto commands              (|cybu-autocmds|)
+
+
+================================================================================
+INTRODUCTION                                                       *cybu.nvim*
+
+This plugin is essentially a wrapper around |:bnext| & |:bprevious|. It adds
+a customizable window, that shows the buffer in focus and its neighbors,
+when cycling the buffer list with the cybu commands.
+ 
+
+================================================================================
+QUICKSTART                                                   *cybu-quickstart*
+
+If you just want to use Cybu.nvim with the default settings (|cybu-config|) 
+put this into the your packer startup function:
+>
+    use({
+      "ghillb/cybu.nvim",
+      branch = "v1.x", -- won't receive breaking changes
+      -- branch = "main", -- branch with timely updates
+      requires = { "kyazdani42/nvim-web-devicons" },
+      config = function()
+        require("cybu").setup()
+        vim.keymap.set("n", "K", "<Plug>(CybuPrev)")
+        vim.keymap.set("n", "J", "<Plug>(CybuNext)")
+      end,
+    })
+<
+If you use another plugin manager, just install `"ghillb/cybu.nvim"` with
+it, like you would with any other plugin and put 
+>
+    require("cybu").setup()
+    vim.keymap.set("n", "K", "<Plug>(CybuPrev)")
+    vim.keymap.set("n", "J", "<Plug>(CybuNext)")
+< 
+somewhere into your |init.lua|.
+
+If you want to customize the cybu settings see the |cybu-config| section.
+
+
+================================================================================
+CONFIG                                                           *cybu-config*
+
+The table below contains all config keys with some exemplary values.
+>
+  local config = {
+    position = {
+      relative_to = "win",          -- win, editor, cursor
+      anchor = "topcenter",         -- topleft, topcenter, topright,
+                                     -- centerleft, center, centerright,
+                                     -- bottomleft, bottomcenter, bottomright
+      vertical_offset = -1,         -- vertical offset from anchor in lines
+      horizontal_offset = -1,       -- vertical offset from anchor in columns
+      max_win_height = 5,           -- height of cybu window in lines
+      max_win_width = 0.5,          -- integer for absolute in columns
+                                     -- float for relative width to win/editor
+    },
+    style = {
+      path = "relative",            -- absolute, relative, tail (filename)
+      border = "single",            -- single, double, rounded, none
+      separator = " ",              -- string used as separator
+      prefix = "…",                 -- string prefix for truncated paths
+      padding = 1,                  -- left & right padding in nr, of spaces
+      devicons = {
+        enabled = true,             -- enable or disable web dev icons
+        colored = true,             -- enable color for web dev icons
+      },
+      highlights = {                -- see highlights via :highlight
+        current_buffer = "Visual",   -- used for the current buffer
+        adjacent_buffers = "Comment",-- used for buffers not in focus
+        background = "Normal",       -- used for the window background
+      },
+    },
+    display_time = 750,             -- time in ms the cybu win is displayed
+    exclude = {                     -- filetypes, cybu will not be active
+      "neo-tree",
+      "fugitive",
+      "qf",
+    },
+    fallback = function() end,      -- arbitrary fallback function
+                                     -- used in excluded filetypes
+  }
+
+After customizing the config table, call the |cybu.setup| function somewhere
+in your |init.lua|, like so:
+>
+    require("cybu").setup(config)
+<
+
+================================================================================
+COMMANDS                                                       *cybu-commands*
+
+The commands *CybuNext* & *CybuPrev* cycle to the next or previous buffer and
+show the context window of Cybu.nvim.
+
+    Example usage:
+>
+    :CybuNext
+<
+    or
+>
+    :CybuPrev
+<
+
+================================================================================
+MAPPINGS                                                       *cybu-mappings*
+
+If you prefer <Plug> mappings, Cybu.nvim provides the mappings
+*<Plug>(CybuPrev)* and *<Plug>(CybuNext)* which yield the same behavior as
+|CybuNext| and |CybuPrev| respectively.
+    
+    Example usage:
+>
+    vim.keymap.set("n", "K", "<Plug>(CybuPrev)")
+    vim.keymap.set("n", "J", "<Plug>(CybuNext)")
+<
+
+================================================================================
+LUA_FUNCTIONS                                                       *cybu-lua*
+
+cybu.setup({config})                                             *cybu.setup*
+
+    The |cybu.setup| function takes an {config} table as parameter containing 
+    the configuration (|cybu-config|) for |cybu.nvim|. This function must be 
+    called in your |init.lua|. The options table can be empty.
+
+    Example usage:
+>
+    require("cybu").setup(config)
+<
+
+cybu.cycle({direction})                                           *cybu.cycle*
+
+    Cybu.nvim provides the |cybu.cycle| lua function, which takes the {direction}
+    parameter to load the respective buffer and show the context window.
+
+    Example usage:
+>
+    require("cybu").cycle("next")
+<
+    or
+>
+    require("cybu").cycle("prev")
+<
+
+================================================================================
+AUTOCOMMANDS                                                   *cybu-autocmds*
+
+Cybu.nvim defines two events:
+
+    - `CybuOpen`, fired when the cybu window is opened 
+    - `CybuClose`, fired when the cybu window is closed
+
+You can define auto commands for these events like so:
+>
+    local cybu = vim.api.nvim_create_augroup("Cybu", { clear = true })
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "CybuOpen",
+      callback = function()
+        -- execute arbitrary lua code here
+      end,
+      group = cybu,
+    })
+<
+
+==============================================================================
+
+vim:tw=78:ts=8:ft=help:norl:
