@@ -2,7 +2,7 @@
 
 **_Cy_**[cle]**_bu_**[ffer]**_.nvim_** is essentially a wrapper around `:bnext` & `:bprevious`. It adds a customizable notification window, that shows the buffer in focus and its neighbors, to provide context when cycling the buffer list with the provided plugin commands / key bindings.
 
-See [:help cybu.nvim](https://github.com/ghillb/cybu.nvim/blob/trunk/doc/cybu.nvim.txt) for the docs.
+See [:help cybu.nvim](https://github.com/ghillb/cybu.nvim/blob/main/doc/cybu.nvim.txt) for the docs.
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/35503959/169406683-6fb0c4dd-2083-4b9b-87b2-3928da81d472.gif" alt="demo1.gif"/>
