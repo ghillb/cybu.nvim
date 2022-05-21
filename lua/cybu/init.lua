@@ -29,10 +29,10 @@ cybu.get_bufs = function()
     end
   end
 
-  -- trim buf names
   if c.opts.style.path == v.style_path.absolute then
-    return
+    return bufs
   end
+  -- trim buf names
   local cwd_path = vim.fn.getcwd() .. "/"
   for _, b in ipairs(bufs) do
     if c.opts.style.path == v.style_path.relative then

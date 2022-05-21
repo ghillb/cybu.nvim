@@ -5,7 +5,7 @@ CYBU_TEST_DIR:=cybu-nvim-test
 export CYBU_TEST_DIR
 
 .PHONY: clean
-clean: 
+clean:
 	rm -rf /tmp/$(CYBU_TEST_DIR)
 
 .PHONY: test
