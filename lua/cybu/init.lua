@@ -58,13 +58,16 @@ end
 cybu.get_widths = function()
   local max_buf_id_width = 0
   local max_buf_name_width = 0
-  local separator_width = 2 * #c.opts.style.separator
   local icon_width = 1
+  local separator_width = (
+      (not _state.has_devicons or not c.opts.style.devicons.enabled) and 0
+      or 1 + (not c.opts.style.hide_buffer_id and 1 or 0)
+    ) * #c.opts.style.separator
 
   if not _state.has_devicons or not c.opts.style.devicons.enabled then
     icon_width = 0
-    separator_width = separator_width / 2
   end
+
   for _, b in ipairs(_state.bufs) do
     local buf_id_width = #tostring(b.id)
     local buf_name_width = #b.name
@@ -73,10 +76,11 @@ cybu.get_widths = function()
     b.buf_id_width = buf_id_width
     b.buf_name_width = buf_name_width
   end
+
   if c.opts.style.hide_buffer_id then
     max_buf_id_width = 0
-    separator_width = separator_width / 2
   end
+
   local max_entry_width = max_buf_id_width
     + max_buf_name_width
     + separator_width
