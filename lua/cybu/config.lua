@@ -17,6 +17,7 @@ local default_config = {
     separator = " ",
     prefix = "…",
     padding = 1,
+    hide_buffer_id = true,
     devicons = {
       enabled = true,
       colored = true,
