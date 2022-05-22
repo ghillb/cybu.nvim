@@ -57,6 +57,25 @@ describe("Cybu:", function()
   end)
 end)
 
+describe("Cybu:", function()
+  it("buf table has the correct form", function()
+    local cybu = require("cybu")
+    assert.True(vim.inspect(cybu.get_bufs()[1]) == vim.inspect({
+      id = 1,
+      name = "",
+    }))
+  end)
+end)
+
+describe("Cybu:", function()
+  it("separator width is calculated correctly", function()
+    local cybu = require("cybu")
+    cybu.setup({ style = { hide_buf_id = false, devicons = { enabled = true } } })
+    local widths = cybu.get_widths()
+    assert.True(widths.separator == 2)
+  end)
+end)
+
 describe("Utils:", function()
   it("icons can be requested", function()
     local utils = require("cybu.utils")
