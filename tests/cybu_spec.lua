@@ -57,6 +57,16 @@ describe("Cybu:", function()
   end)
 end)
 
+describe("Cybu:", function()
+  it("buf table has the correct form", function()
+    local cybu = require("cybu")
+    assert.True(vim.inspect(cybu.get_bufs()[1]) == vim.inspect({
+      id = 1,
+      name = "",
+    }))
+  end)
+end)
+
 describe("Utils:", function()
   it("icons can be requested", function()
     local utils = require("cybu.utils")
