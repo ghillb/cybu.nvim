@@ -72,6 +72,7 @@ The table below contains all config keys with some exemplary values.
       separator = " ",              -- string used as separator
       prefix = "…",                 -- string prefix for truncated paths
       padding = 1,                  -- left & right padding in nr, of spaces
+      hide_buffer_id = false,       -- hide buffer IDs in window
       devicons = {
         enabled = true,             -- enable or disable web dev icons
         colored = true,             -- enable color for web dev icons

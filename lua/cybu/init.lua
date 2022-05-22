@@ -73,6 +73,10 @@ cybu.get_widths = function()
     b.buf_id_width = buf_id_width
     b.buf_name_width = buf_name_width
   end
+  if c.opts.style.hide_buffer_id then
+    max_buf_id_width = 0
+    separator_width = separator_width / 2
+  end
   local max_entry_width = max_buf_id_width
     + max_buf_name_width
     + separator_width
@@ -120,7 +124,11 @@ cybu.get_entries = function()
       + _state.widths.icon
       + b.buf_name_width
       + 2 * c.opts.style.padding
-    local entry = buf_id .. c.opts.style.separator
+
+    local entry = ""
+    if not c.opts.style.hide_buffer_id then
+      entry = buf_id .. c.opts.style.separator
+    end
 
     if _state.has_devicons and c.opts.style.devicons.enabled then
       entry = entry .. icon.text .. c.opts.style.separator
