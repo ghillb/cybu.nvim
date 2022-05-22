@@ -59,10 +59,12 @@ cybu.get_widths = function()
   local max_buf_id_width = 0
   local max_buf_name_width = 0
   local icon_width = 1
-  local separator_width = (
-      (not _state.has_devicons or not c.opts.style.devicons.enabled) and 0
-      or 1 + (not c.opts.style.hide_buffer_id and 1 or 0)
-    ) * #c.opts.style.separator
+  local separator_width = #c.opts.style.separator
+  if not c.opts.style.hide_buffer_id and _state.has_devicons and c.opts.style.devicons.enabled then
+    separator_width = separator_width * 2
+  elseif c.opts.style.hide_buffer_id and (not c.opts.style.devicons.enabled or not _state.has_devicons) then
+    separator_width = 0
+  end
 
   if not _state.has_devicons or not c.opts.style.devicons.enabled then
     icon_width = 0
