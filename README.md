@@ -127,5 +127,5 @@ If breaking changes (will be kept to a minimum) are of no concern to you, use th
 Run tests with
 
 ```bash
-nvim --headless -c "PlenaryBustedDirectory tests/"
+make tests
 ```

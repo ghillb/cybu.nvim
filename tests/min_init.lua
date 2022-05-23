@@ -1,3 +1,5 @@
+vim.cmd("packadd packer.nvim")
+
 local function pjoin(...)
   return table.concat({ ... }, "/")
 end
@@ -31,10 +33,6 @@ function _G.run_tests()
   require("plenary.test_harness").test_directory("./tests", {
     minimal_init = vim.fn.getcwd() .. "/tests/min_init.lua",
   })
-end
-
-if vim.fn.isdirectory(install_path) == 0 then
-  vim.fn.system({ "git", "clone", "https://github.com/wbthomason/packer.nvim", install_path })
 end
 
 load_plugins()
