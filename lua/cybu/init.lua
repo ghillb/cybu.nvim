@@ -299,9 +299,38 @@ cybu.cycle = function(direction)
   if vim.tbl_contains(c.opts.exclude, filetype) then
     return c.opts.fallback and c.opts.fallback()
   end
+  if direction == v.direction.last_used then
+    return cybu.cycle_last_used()
+  end
   cybu.load_target_buf(direction)
   cybu.populate_state()
   cybu.show_cybu_win()
+end
+
+cybu.cycle_last_used = function()
+  local bids = vim.tbl_filter(function(b)
+    if 1 ~= vim.fn.buflisted(b) then
+      return false
+    end
+    return true
+  end, vim.api.nvim_list_bufs())
+  if not next(bids) then
+    return
+  end
+  table.sort(bids, function(a, b)
+    return vim.fn.getbufinfo(a)[1].lastused > vim.fn.getbufinfo(b)[1].lastused
+  end)
+  -- P(bids)
+
+  local bufs = {}
+  for _, id in ipairs(bids) do
+    local buf = {
+      id = id,
+      name = vim.fn.getbufinfo(id)[1].name,
+    }
+    table.insert(bufs, buf)
+  end
+  -- P(bufs)
 end
 
 return cybu

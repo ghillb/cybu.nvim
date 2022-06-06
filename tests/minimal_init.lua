@@ -31,7 +31,7 @@ end
 
 function _G.run_tests()
   require("plenary.test_harness").test_directory("./tests", {
-    minimal_init = vim.fn.getcwd() .. "/tests/min_init.lua",
+    minimal_init = vim.fn.getcwd() .. "/tests/minimal_init.lua",
   })
 end
 
