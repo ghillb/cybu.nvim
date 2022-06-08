@@ -14,9 +14,13 @@ TABLE OF CONTENTS                                              *cybu.nvim.toc*
 ================================================================================
 INTRODUCTION                                                       *cybu.nvim*
 
-This plugin is essentially a wrapper around |:bnext| & |:bprevious|. It adds
-a customizable window, that shows the buffer in focus and its neighbors,
-when cycling the buffer list with the cybu commands.
+This plugin offers two modes. The first is essentially a wrapper around |:bnext|
+& |:bprevious|, which adds a customizable window, that shows the buffer in focus
+and its neighbors, when cycling the buffer list with the cybu commands.
+
+The second mode adds the same customizable window providing context,
+but the list of buffers is ordered by history. It is more akin to the
+[Alt] + [Tab] functionality a web browser might provide.
  
 
 ================================================================================
@@ -34,6 +38,8 @@ put this into the your packer startup function:
         require("cybu").setup()
         vim.keymap.set("n", "K", "<Plug>(CybuPrev)")
         vim.keymap.set("n", "J", "<Plug>(CybuNext)")
+        vim.keymap.set("n", "<a-s-tab>", "<plug>(CybuHistoryPrev)")
+        vim.keymap.set("n", "<a-tab>", "<plug>(CybuHistoryNext)")
       end,
     })
 <
@@ -41,8 +47,10 @@ If you use another plugin manager, just install `"ghillb/cybu.nvim"` with
 it, like you would with any other plugin and put 
 >
     require("cybu").setup()
-    vim.keymap.set("n", "K", "<Plug>(CybuPrev)")
-    vim.keymap.set("n", "J", "<Plug>(CybuNext)")
+    vim.keymap.set("n", "[b", "<Plug>(CybuPrev)")
+    vim.keymap.set("n", "]b", "<Plug>(CybuNext)")
+    vim.keymap.set("n", "K", "<plug>(CybuHistoryPrev)")
+    vim.keymap.set("n", "J", "<plug>(CybuHistoryNext)")
 < 
 somewhere into your |init.lua|.
 
@@ -114,6 +122,18 @@ show the context window of Cybu.nvim.
     :CybuPrev
 <
 
+The commands *CybuHistoryNext* & *CybuHistoryPrev* cycle to the next or previous
+buffer in the history after the context window of Cybu.nvim is dismissed.
+
+    Example usage:
+>
+    :CybuHistoryNext
+<
+    or
+>
+    :CybuHistoryPrev
+<
+
 ================================================================================
 MAPPINGS                                                       *cybu-mappings*
 
@@ -126,6 +146,17 @@ If you prefer <Plug> mappings, Cybu.nvim provides the mappings
     vim.keymap.set("n", "K", "<Plug>(CybuPrev)")
     vim.keymap.set("n", "J", "<Plug>(CybuNext)")
 <
+
+Similar mappings exist for |CybuHistoryNext| and |CybuHistoryPrev|.
+
+    Example usage:
+>
+    vim.keymap.set("n", "<a-tab>", "<plug>(CybuHistoryNext)")
+    vim.keymap.set("n", "<a-s-tab>", "<plug>(CybuHistoryPrev)")
+<
+
+Beware the <a-tab> and <a-s-tab> mappings do not work out of the box for
+all terminals.
 
 ================================================================================
 LUA_FUNCTIONS                                                       *cybu-lua*
@@ -141,7 +172,7 @@ cybu.setup({config})                                             *cybu.setup*
     require("cybu").setup(config)
 <
 
-cybu.cycle({direction})                                           *cybu.cycle*
+cybu.cycle({direction}, [{mode}])                                           *cybu.cycle*
 
     Cybu.nvim provides the |cybu.cycle| lua function, which takes the {direction}
     parameter to load the respective buffer and show the context window.
@@ -152,7 +183,7 @@ cybu.cycle({direction})                                           *cybu.cycle*
 <
     or
 >
-    require("cybu").cycle("prev")
+    require("cybu").cycle("prev", "history")
 <
 
 ================================================================================
@@ -175,6 +206,6 @@ You can define auto commands for these events like so:
     })
 <
 
-==============================================================================
+================================================================================
 
 vim:tw=78:ts=8:ft=help:norl:
