@@ -1,4 +1,5 @@
 local c = require("cybu.config")
+local plenary_loaded, strings = pcall(require, "plenary.strings")
 
 ---@class CybuUtils
 local utils = {}
@@ -34,6 +35,12 @@ utils.get_icon = load_once(function()
       end
 
       local icon, highlight = devicons.get_icon(filename, string.match(filename, "%a+$"), { default = true })
+
+      -- truncate some ambiwidth icons when plenary is installed
+      if plenary_loaded and (strings.strdisplaywidth(icon) > 1) then
+        icon = strings.truncate(icon, 1)
+      end
+
       if c.opts.style.devicons.colored then
         return { text = icon, highlight = highlight }
       else

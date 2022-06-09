@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := tests
 
-NVIM_HEADLESS:=nvim --headless --noplugin -u tests/min_init.lua
+NVIM_HEADLESS:=nvim --headless --noplugin -u tests/minimal_init.lua
 CYBU_TEST_DIR:=cybu-nvim-test
 PACK_PATH:=~/.local/share/nvim/site/pack/packer/start
 export CYBU_TEST_DIR
