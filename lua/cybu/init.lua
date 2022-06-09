@@ -19,14 +19,15 @@ end
 
 cybu.get_bufs = function()
   local bufs = {}
-  for _, id in ipairs(vim.api.nvim_list_bufs()) do
-    local buf_info = vim.fn.getbufinfo(id)[1]
-    if buf_info.listed == 1 then
-      table.insert(bufs, {
-        id = id,
-        name = buf_info.name,
-      })
-    end
+
+  local history = _state.history
+  history = vim.fn.filter(history, "buflisted(v:val) == 1")
+  history = vim.fn.uniq(history)
+  for _, id in ipairs(history) do
+    table.insert(bufs, {
+      id = id,
+      name = vim.fn.bufname(id),
+    })
   end
 
   if c.opts.style.path == v.style_path.absolute then
@@ -45,11 +46,98 @@ cybu.get_bufs = function()
   return bufs
 end
 
+local history_disabled = false
+
+local function history_append(opts)
+  if history_disabled then
+    return
+  end
+
+  opts = opts or { buf = 0 }
+  local bufnr = opts.buf
+
+  local history = vim.w.history
+  local history_index = vim.w.history_index
+
+  if not history_index then
+    history_index = 1
+    history = {}
+
+    local i = bufnr + 1
+    while vim.fn.bufexists(i) == 1 do
+      table.insert(history, i)
+      i = i + 1
+    end
+  elseif history[history_index] == bufnr then
+    return
+  else
+    history_index = history_index + 1
+  end
+
+  local is_buffer_listed = history_index <= #history and history[history_index] == bufnr
+
+  if not is_buffer_listed then
+    history[history_index] = bufnr
+  end
+
+  vim.w.history = history
+  vim.w.history_index = history_index
+end
+
+local list_type = vim.fn.type({})
+local function history_delete(opts)
+  if history_disabled then
+    return
+  end
+
+  opts = opts or { buf = 0 }
+  local bufnr = opts.buf
+
+  for _, win_idx in ipairs(vim.api.nvim_list_wins()) do
+    local ok, history = pcall(vim.api.nvim_win_get_var, win_idx, "history")
+
+    if ok and vim.fn.type(history) == list_type then
+      history = vim.fn.filter(history, "v:val != " .. bufnr)
+      history = vim.fn.uniq(history)
+
+      vim.api.nvim_win_set_var(win_idx, "history", history)
+
+      local history_index
+      ok, history_index = pcall(vim.api.nvim_win_get_var, win_idx, "history_index")
+      if ok and history_index > #history then
+        vim.api.nvim_win_set_var(win_idx, "history_index", #history)
+      end
+    end
+  end
+end
+
+local augroup = vim.api.nvim_create_augroup("cybu", {})
+vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
+  group = augroup,
+  pattern = "*",
+  callback = history_append,
+})
+vim.api.nvim_create_autocmd("BufDelete", {
+  group = augroup,
+  pattern = "*",
+  callback = history_delete,
+})
+
 cybu.load_target_buf = function(direction)
   if direction == v.direction.next then
-    vim.cmd("bnext")
+    if vim.w.history_index < #vim.w.history then
+      vim.w.history_index = vim.w.history_index + 1
+      history_disabled = true
+      vim.api.nvim_win_set_buf(0, vim.w.history[vim.w.history_index])
+      history_disabled = false
+    end
   elseif direction == v.direction.prev then
-    vim.cmd("bprevious")
+    if vim.w.history_index > 1 then
+      vim.w.history_index = vim.w.history_index - 1
+      history_disabled = true
+      vim.api.nvim_win_set_buf(0, vim.w.history[vim.w.history_index])
+      history_disabled = false
+    end
   else
     error("Invalid argument: '" .. direction .. "'. Allowed: " .. vim.inspect(v.direction))
   end
@@ -113,15 +201,38 @@ cybu.get_widths = function()
   }
 end
 
+local function current_history_index()
+  local current_win = vim.api.nvim_get_current_win()
+  local ok, history_index = pcall(vim.api.nvim_win_get_var, current_win, "history_index")
+  if not ok then
+    return
+  end
+  return history_index
+end
+
+local function current_history()
+  local current_win = vim.api.nvim_get_current_win()
+  local ok, history = pcall(vim.api.nvim_win_get_var, current_win, "history")
+  if not ok then
+    return
+  end
+
+  return history
+end
+
 cybu.get_entries = function()
   local entries = {}
   local pad_str = string.rep(" ", c.opts.style.padding)
+
   for i, b in ipairs(_state.bufs) do
     local buf_id = b.id
     local icon = u.get_icon(b.name, c.opts.style.devicons.enabled)
-    if b.id == _state.current_buf then
-      _state.focus = i
+
+    local focused = false
+    if i == _state.history_index and b.id == _state.history[_state.history_index] then
+      focused = true
     end
+
     if b.buf_id_width < _state.widths.buf_id then
       buf_id = buf_id .. string.rep(" ", _state.widths.buf_id - b.buf_id_width)
     end
@@ -150,7 +261,7 @@ cybu.get_entries = function()
     else
       entry = entry .. string.rep(" ", _state.widths.win - entry_width)
     end
-    entries[i] = { entry = entry, bid = b.id, icon_highlight = icon.highlight }
+    entries[i] = { entry = entry, bid = b.id, icon_highlight = icon.highlight, focused = focused }
   end
   return entries
 end
@@ -164,17 +275,21 @@ cybu.get_view = function()
     offset1, offset2 = offset2, offset1
   end
 
-  local first = _state.focus - (win_height - offset1) / 2 + offset2
-  local last = _state.focus + (win_height - offset1) / 2
+  local first = _state.history_index - (win_height - offset1) / 2 + offset2
+  local last = _state.history_index + (win_height - offset1) / 2
+
+  while first < 1 do
+    first = first + 1
+    last = last + 1
+  end
+
+  while last > ecount do
+    last = last - 1
+    first = first - 1
+  end
 
   for i = first, last do
-    if i <= 0 then
-      table.insert(view, _state.entries[i + ecount])
-    elseif i > ecount then
-      table.insert(view, _state.entries[i - ecount])
-    else
-      table.insert(view, _state.entries[i])
-    end
+    table.insert(view, _state.entries[i])
   end
 
   return view
@@ -193,7 +308,7 @@ cybu.get_cybu_buf = function()
 
   for lnum, line in ipairs(_state.view) do
     vim.api.nvim_buf_set_lines(cybu_buf, lnum - 1, -1, true, { line.entry })
-    if line.bid == _state.current_buf then
+    if line.focused then
       vim.api.nvim_buf_add_highlight(cybu_buf, _state.cybu_ns, c.opts.style.highlights.current_buffer, lnum - 1, 0, -1)
     else
       vim.api.nvim_buf_add_highlight(
@@ -282,7 +397,8 @@ cybu.show_cybu_win = function()
 end
 
 cybu.populate_state = function()
-  _state.current_buf = vim.api.nvim_get_current_buf()
+  _state.history_index = current_history_index()
+  _state.history = current_history()
   _state.bufs = cybu.get_bufs()
   _state.widths = cybu.get_widths()
   _state.entries = cybu.get_entries()

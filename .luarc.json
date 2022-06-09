@@ -1,4 +1,4 @@
 {
   "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
-  "Lua.diagnostics.globals": ["packer_plugins", "P"]
+  "Lua.diagnostics.globals": ["packer_plugins", "P", "vim"]
 }
