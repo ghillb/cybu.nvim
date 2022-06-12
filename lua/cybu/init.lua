@@ -62,7 +62,7 @@ cybu.get_widths = function()
   local separator_width = #c.opts.style.separator
   if not c.opts.style.hide_buffer_id and _state.has_devicons and c.opts.style.devicons.enabled then
     separator_width = separator_width * 2
-  elseif c.opts.style.hide_buffer_id and (not c.opts.style.devicons.enabled or not _state.has_devicons) then
+  elseif c.opts.style.hide_buffer_id and not (c.opts.style.devicons.enabled and _state.has_devicons) then
     separator_width = 0
   end
 

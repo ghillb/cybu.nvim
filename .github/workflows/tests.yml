@@ -1,0 +1,21 @@
+---
+name: Run tests
+
+on:
+  push:
+    branches:
+      - "main"
+      - "dev"
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: v0.7.0
+      - name: Run tests
+        run: make ci_tests
