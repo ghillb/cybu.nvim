@@ -38,8 +38,8 @@ put this into the your packer startup function:
         require("cybu").setup()
         vim.keymap.set("n", "K", "<Plug>(CybuPrev)")
         vim.keymap.set("n", "J", "<Plug>(CybuNext)")
-        vim.keymap.set("n", "<a-s-tab>", "<plug>(CybuHistoryPrev)")
-        vim.keymap.set("n", "<a-tab>", "<plug>(CybuHistoryNext)")
+        vim.keymap.set("n", "<s-tab>", "<plug>(CybuHistoryPrev)")
+        vim.keymap.set("n", "<tab>", "<plug>(CybuHistoryNext)")
       end,
     })
 <
@@ -49,8 +49,8 @@ it, like you would with any other plugin and put
     require("cybu").setup()
     vim.keymap.set("n", "[b", "<Plug>(CybuPrev)")
     vim.keymap.set("n", "]b", "<Plug>(CybuNext)")
-    vim.keymap.set("n", "K", "<plug>(CybuHistoryPrev)")
-    vim.keymap.set("n", "J", "<plug>(CybuHistoryNext)")
+    vim.keymap.set("n", "<a-s-tab>", "<plug>(CybuHistoryPrev)")
+    vim.keymap.set("n", "<a-tab>", "<plug>(CybuHistoryNext)")
 < 
 somewhere into your |init.lua|.
 

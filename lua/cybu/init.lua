@@ -18,9 +18,10 @@ cybu.setup = function(user_config)
 end
 
 cybu.get_bufs = function()
-  local bufs, bufs_lookup = {}, {}
-  local bids = vim.tbl_filter(function(b)
-    if 1 ~= vim.fn.buflisted(b) then
+  local bufs, lookup = {}, {}
+  local cwd_path = vim.fn.getcwd() .. "/"
+  local bids = vim.tbl_filter(function(id)
+    if 1 ~= vim.fn.buflisted(id) then
       return false
     end
     return true
@@ -31,29 +32,23 @@ cybu.get_bufs = function()
       return vim.fn.getbufinfo(a)[1].lastused > vim.fn.getbufinfo(b)[1].lastused
     end)
   end
+
   for i, id in ipairs(bids) do
-    local buf = {
-      id = id,
-      name = vim.fn.getbufinfo(id)[1].name, -- name = vim.fn.bufname(id),?
-    }
-    table.insert(bufs, buf)
-    bufs_lookup[id] = i
-  end
-
-  if c.opts.style.path == v.style_path.absolute then
-    return bufs, bufs_lookup
-  end
-  -- trim buf names
-  local cwd_path = vim.fn.getcwd() .. "/"
-  for _, b in ipairs(bufs) do
+    local name = vim.fn.bufname(id)
+    -- trim buf names
     if c.opts.style.path == v.style_path.relative then
-      b.name = string.gsub(b.name, cwd_path, "")
+      name = string.gsub(name, cwd_path, "")
     elseif c.opts.style.path == v.style_path.tail then
-      b.name = vim.fn.fnamemodify(b.name, ":t")
+      name = vim.fn.fnamemodify(name, ":t")
     end
+    table.insert(bufs, {
+      id = id,
+      name = name,
+    })
+    lookup[id] = i
   end
 
-  return bufs, bufs_lookup
+  return bufs, lookup
 end
 
 cybu.load_target_buf = function(direction)
@@ -128,13 +123,13 @@ cybu.get_entries = function()
   local entries = {}
   local pad_str = string.rep(" ", c.opts.style.padding)
   for i, b in ipairs(_state.bufs) do
-    local buf_id = b.id
+    local bid = b.id
     local icon = u.get_icon(b.name, c.opts.style.devicons.enabled)
-    if b.id == _state.current_buf then
+    if bid == _state.current_buf then
       _state.center = i
     end
     if b.buf_id_width < _state.widths.buf_id then
-      buf_id = buf_id .. string.rep(" ", _state.widths.buf_id - b.buf_id_width)
+      bid = bid .. string.rep(" ", _state.widths.buf_id - b.buf_id_width)
     end
     local entry_width = _state.widths.buf_id
       + _state.widths.separator
@@ -144,7 +139,7 @@ cybu.get_entries = function()
 
     local entry = ""
     if not c.opts.style.hide_buffer_id then
-      entry = buf_id .. c.opts.style.separator
+      entry = bid .. c.opts.style.separator
     end
 
     if _state.has_devicons and c.opts.style.devicons.enabled then
@@ -201,6 +196,9 @@ cybu.get_view = function()
     local frame_nr = 1
     if _state.focus then
       frame_nr = math.floor((_state.focus + _state.increment) % ecount / _state.win_height) % frame_count + 1
+      _state.focus = (_state.focus + _state.increment) % #_state.bufs
+    else
+      _state.focus = _state.lookup[_state.current_buf]
     end
     local first = (frame_nr - 1) * c.opts.position.max_win_height + 1
     local last = frame_nr * c.opts.position.max_win_height
@@ -251,11 +249,6 @@ cybu.get_cybu_buf = function()
   end
 
   if _state.mode == v.mode.history then
-    if not _state.focus then
-      _state.focus = _state.lookup[_state.current_buf]
-    else
-      _state.focus = (_state.focus + _state.increment) % #_state.bufs
-    end
     vim.api.nvim_buf_add_highlight(
       cybu_buf,
       _state.cybu_ns,
@@ -327,7 +320,7 @@ cybu.show_cybu_win = function()
   _state.cybu_win_timer = vim.defer_fn(function()
     close_cybu_win()
     if _state.mode == v.mode.history then
-      local target = _state.bufs[_state.focus + 1] -- BUG: inconsistent
+      local target = _state.bufs[_state.focus + 1]
       _state.focus = nil
       return target and vim.api.nvim_win_set_buf(0, target.id)
     end
@@ -346,6 +339,7 @@ end
 --- Function to trigger buffer cycling into {direction}.
 -- @usage require'cybu'.cycle(direction)
 -- @param direction string: 'next' or 'prev'
+-- @param mode string: 'default' or 'history'
 cybu.cycle = function(direction, mode)
   vim.validate({ direction = { direction, "string", false } })
   local filetype = vim.api.nvim_buf_get_option(vim.api.nvim_get_current_buf(), "filetype")
