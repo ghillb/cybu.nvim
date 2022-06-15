@@ -17,6 +17,14 @@ vim.api.nvim_create_user_command("CybuNext", function()
   require("cybu").cycle("next")
 end, { nargs = 0 })
 
+vim.api.nvim_create_user_command("CybuHistoryPrev", function()
+  require("cybu").cycle("prev", "history")
+end, { nargs = 0 })
+
+vim.api.nvim_create_user_command("CybuHistoryNext", function()
+  require("cybu").cycle("next", "history")
+end, { nargs = 0 })
+
 vim.api.nvim_create_user_command("Cybu", function(args)
   require("cybu").cycle(args.fargs[1])
 end, {
@@ -29,3 +37,15 @@ end, {
 -- define <Plug> mappings
 vim.keymap.set("n", "<plug>(CybuPrev)", ":lua require('cybu').cycle('prev')<cr>", { silent = true, noremap = true })
 vim.keymap.set("n", "<plug>(CybuNext)", ":lua require('cybu').cycle('next')<cr>", { silent = true, noremap = true })
+vim.keymap.set(
+  "n",
+  "<plug>(CybuHistoryPrev)",
+  ":lua require('cybu').cycle('prev', 'history')<cr>",
+  { silent = true, noremap = true }
+)
+vim.keymap.set(
+  "n",
+  "<plug>(CybuHistoryNext)",
+  ":lua require('cybu').cycle('next', 'history')<cr>",
+  { silent = true, noremap = true }
+)

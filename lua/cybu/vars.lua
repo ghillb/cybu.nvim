@@ -1,5 +1,6 @@
 local vars = {}
 
+vars.mode = { default = "default", history = "history" }
 vars.direction = { next = "next", prev = "prev" }
 vars.style_path = { absolute = "absolute", relative = "relative", tail = "tail" }
 vars.pos_relative_to = { win = "win", editor = "editor", cursor = "cursor" }

@@ -1,6 +1,8 @@
 # Cybu.nvim
 
-**_Cy_**[cle]**_bu_**[ffer]**_.nvim_** is essentially a wrapper around `:bnext` & `:bprevious`. It adds a customizable notification window, that shows the buffer in focus and its neighbors, to provide context when cycling the buffer list with the provided plugin commands / key bindings.
+**_Cy_**[cle]**_bu_**[ffer]**_.nvim_** provides two modes. The first is essentially a wrapper around `:bnext` & `:bprevious`, which adds a customizable notification window, that shows the buffer in focus and its neighbors, to provide context when cycling the buffer list with the provided plugin commands / key bindings.
+
+The second mode adds the same customizable window providing context, but the list of buffers is ordered by history. It is more akin to the `[Ctrl] + [Tab]` functionality a web browser might provide.
 
 See [:help cybu.nvim](https://github.com/ghillb/cybu.nvim/blob/main/doc/cybu.nvim.txt) for the docs.
 
@@ -43,22 +45,26 @@ use({
     cybu.setup()
     vim.keymap.set("n", "K", "<Plug>(CybuPrev)")
     vim.keymap.set("n", "J", "<Plug>(CybuNext)")
+    vim.keymap.set("n", "<s-tab>", "<plug>(CybuHistoryPrev)")
+    vim.keymap.set("n", "<tab>", "<plug>(CybuHistoryNext)")
   end,
 })
 ```
 
-After installing, run the `:CybuNext` or `:CybuPrev` command to cycle buffers and display the context window or use the exemplary key bindings defined above.
+After installing, cycle buffers and display the context window by using the exemplary key bindings defined above.
 
 ### Setup with other plugin managers
 
 If you use another plugin manager, install `"ghillb/cybu.nvim"` and optionally `"kyazdani42/nvim-web-devicons"` with it, like you would with any other plugin.
 
-Setup up **_Cybu_** by calling its setup function and placing the respective key bindings, which load the previous/next buffer, somewhere into your `init.lua`.
+Setup up **_Cybu_** by calling its setup function and placing the respective key bindings, somewhere into your `init.lua`.
 
 ```lua
 require("cybu").setup()
 vim.keymap.set("n", "[b", "<Plug>(CybuPrev)")
 vim.keymap.set("n", "]b", "<Plug>(CybuNext)")
+vim.keymap.set("n", "<s-tab>", "<plug>(CybuHistoryPrev)")
+vim.keymap.set("n", "<tab>", "<plug>(CybuHistoryNext)")
 ```
 
 ## Configuration
@@ -108,6 +114,7 @@ require("cybu").setup({
 
 ## Features
 
+- Two modes: cycle `:buffers` list or cycle buffer history
 - Adaptive size of the **_Cybu_** window
 - Various styling & positioning options
 - Exclude filetypes and define fallback
@@ -119,8 +126,9 @@ If breaking changes (will be kept to a minimum) are of no concern to you, use th
 
 ## Roadmap
 
-- Improve tests, tooling and add CI
 - Add possibility to further customize the entry layout
+- Offer more modes to cycle buffers
+- Improve tests, tooling and add CI
 
 ## Testing via [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
 
