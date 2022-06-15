@@ -18,7 +18,7 @@ cybu.setup = function(user_config)
 end
 
 cybu.get_bufs = function()
-  local bufs, lookup = {}, {}
+  local bufs = {}
   local cwd_path = vim.fn.getcwd() .. "/"
   local bids = vim.tbl_filter(function(id)
     if 1 ~= vim.fn.buflisted(id) then
@@ -45,10 +45,9 @@ cybu.get_bufs = function()
       id = id,
       name = name,
     })
-    lookup[id] = i
   end
 
-  return bufs, lookup
+  return bufs
 end
 
 cybu.load_target_buf = function(direction)
@@ -198,7 +197,7 @@ cybu.get_view = function()
       frame_nr = math.floor((_state.focus + _state.increment) % ecount / _state.win_height) % frame_count + 1
       _state.focus = (_state.focus + _state.increment) % #_state.bufs
     else
-      _state.focus = _state.lookup[_state.current_buf]
+      _state.focus = 1
     end
     local first = (frame_nr - 1) * c.opts.position.max_win_height + 1
     local last = frame_nr * c.opts.position.max_win_height
@@ -329,7 +328,7 @@ end
 
 cybu.populate_state = function()
   _state.current_buf = vim.api.nvim_get_current_buf()
-  _state.bufs, _state.lookup = cybu.get_bufs()
+  _state.bufs = (not _state.focus or _state.mode == v.mode.default) and cybu.get_bufs() or _state.bufs
   _state.widths = cybu.get_widths()
   _state.entries = cybu.get_entries()
   _state.view = cybu.get_view()
