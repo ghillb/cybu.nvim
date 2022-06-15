@@ -96,9 +96,9 @@ require("cybu").setup({
       colored = true,             -- enable color for web dev icons
     },
     highlights = {                -- see highlights via :highlight
-      current_buffer = "Visual",    -- used for the current buffer
-      adjacent_buffers = "Comment", -- used for buffers not in focus
-      background = "Normal",        -- used for the window background
+      current_buffer = "CybuFocus",       -- for current / selected buffer
+      adjacent_buffers = "CybuAdjacent",  -- for buffers not in focus
+      background = "CybuBackground",      -- for the window background
     },
   },
   display_time = 750,             -- time the cybu window is displayed

@@ -23,9 +23,9 @@ local default_config = {
       colored = true,
     },
     highlights = {
-      current_buffer = "Visual",
-      adjacent_buffers = "Comment",
-      background = "Normal",
+      current_buffer = "CybuFocus",
+      adjacent_buffers = "CybuAdjacent",
+      background = "CubuBackground",
     },
   },
   display_time = 750,

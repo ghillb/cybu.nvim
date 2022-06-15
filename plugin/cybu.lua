@@ -49,3 +49,11 @@ vim.keymap.set(
   ":lua require('cybu').cycle('next', 'history')<cr>",
   { silent = true, noremap = true }
 )
+
+-- set default highlight groups
+vim.api.nvim_set_hl(0, "CybuFocus", {
+  fg = vim.api.nvim_get_hl_by_name("Normal", true).foreground,
+  bg = vim.api.nvim_get_hl_by_name("Visual", true).background,
+})
+vim.api.nvim_set_hl(0, "CybuAdjacent", { link = "Comment" })
+vim.api.nvim_set_hl(0, "CybuBackground", { link = "Normal" })

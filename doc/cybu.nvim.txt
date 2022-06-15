@@ -21,12 +21,12 @@ and its neighbors, when cycling the buffer list with the cybu commands.
 The second mode adds the same customizable window providing context,
 but the list of buffers is ordered by history. It is more akin to the
 [Alt] + [Tab] functionality a web browser might provide.
- 
+
 
 ================================================================================
 QUICKSTART                                                   *cybu-quickstart*
 
-If you just want to use Cybu.nvim with the default settings (|cybu-config|) 
+If you just want to use Cybu.nvim with the default settings (|cybu-config|)
 put this into the your packer startup function:
 >
     use({
@@ -44,14 +44,14 @@ put this into the your packer startup function:
     })
 <
 If you use another plugin manager, just install `"ghillb/cybu.nvim"` with
-it, like you would with any other plugin and put 
+it, like you would with any other plugin and put
 >
     require("cybu").setup()
     vim.keymap.set("n", "[b", "<Plug>(CybuPrev)")
     vim.keymap.set("n", "]b", "<Plug>(CybuNext)")
     vim.keymap.set("n", "<a-s-tab>", "<plug>(CybuHistoryPrev)")
     vim.keymap.set("n", "<a-tab>", "<plug>(CybuHistoryNext)")
-< 
+<
 somewhere into your |init.lua|.
 
 If you want to customize the cybu settings see the |cybu-config| section.
@@ -86,9 +86,9 @@ The table below contains all config keys with some exemplary values.
         colored = true,             -- enable color for web dev icons
       },
       highlights = {                -- see highlights via :highlight
-        current_buffer = "Visual",   -- used for the current buffer
-        adjacent_buffers = "Comment",-- used for buffers not in focus
-        background = "Normal",       -- used for the window background
+        current_buffer = "CybuFocus",       -- for current / selected buffer
+        adjacent_buffers = "CybuAdjacent",  -- for buffers not in focus
+        background = "CybuBackground",      -- for the window background
       },
     },
     display_time = 750,             -- time in ms the cybu win is displayed
@@ -140,7 +140,7 @@ MAPPINGS                                                       *cybu-mappings*
 If you prefer <Plug> mappings, Cybu.nvim provides the mappings
 *<Plug>(CybuPrev)* and *<Plug>(CybuNext)* which yield the same behavior as
 |CybuNext| and |CybuPrev| respectively.
-    
+
     Example usage:
 >
     vim.keymap.set("n", "K", "<Plug>(CybuPrev)")
@@ -163,8 +163,8 @@ LUA_FUNCTIONS                                                       *cybu-lua*
 
 cybu.setup({config})                                             *cybu.setup*
 
-    The |cybu.setup| function takes an {config} table as parameter containing 
-    the configuration (|cybu-config|) for |cybu.nvim|. This function must be 
+    The |cybu.setup| function takes an {config} table as parameter containing
+    the configuration (|cybu-config|) for |cybu.nvim|. This function must be
     called in your |init.lua|. The options table can be empty.
 
     Example usage:
@@ -191,7 +191,7 @@ AUTOCOMMANDS                                                   *cybu-autocmds*
 
 Cybu.nvim defines two events:
 
-    - `CybuOpen`, fired when the cybu window is opened 
+    - `CybuOpen`, fired when the cybu window is opened
     - `CybuClose`, fired when the cybu window is closed
 
 You can define auto commands for these events like so:
