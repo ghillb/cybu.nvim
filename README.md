@@ -2,7 +2,7 @@
 
 **_Cy_**[cle]**_bu_**[ffer]**_.nvim_** provides two modes. The first is essentially a wrapper around `:bnext` & `:bprevious`, which adds a customizable notification window, that shows the buffer in focus and its neighbors, to provide context when cycling the buffer list with the provided plugin commands / key bindings.
 
-The second mode adds the same customizable window providing context, but the list of buffers is ordered by history. It is more akin to the `[Ctrl] + [Tab]` functionality a web browser might provide.
+The second mode adds the same customizable window providing context, but the list of buffers is ordered by last used. It is more akin to the `[Ctrl] + [Tab]` functionality a web browser might provide.
 
 See [:help cybu.nvim](https://github.com/ghillb/cybu.nvim/blob/main/doc/cybu.nvim.txt) for the docs.
 
@@ -45,8 +45,8 @@ use({
     cybu.setup()
     vim.keymap.set("n", "K", "<Plug>(CybuPrev)")
     vim.keymap.set("n", "J", "<Plug>(CybuNext)")
-    vim.keymap.set("n", "<s-tab>", "<plug>(CybuHistoryPrev)")
-    vim.keymap.set("n", "<tab>", "<plug>(CybuHistoryNext)")
+    vim.keymap.set("n", "<s-tab>", "<plug>(CybuLastusedPrev)")
+    vim.keymap.set("n", "<tab>", "<plug>(CybuLastusedNext)")
   end,
 })
 ```
@@ -63,8 +63,8 @@ Setup up **_Cybu_** by calling its setup function and placing the respective key
 require("cybu").setup()
 vim.keymap.set("n", "[b", "<Plug>(CybuPrev)")
 vim.keymap.set("n", "]b", "<Plug>(CybuNext)")
-vim.keymap.set("n", "<s-tab>", "<plug>(CybuHistoryPrev)")
-vim.keymap.set("n", "<tab>", "<plug>(CybuHistoryNext)")
+vim.keymap.set("n", "<s-tab>", "<plug>(CybuLastusedPrev)")
+vim.keymap.set("n", "<tab>", "<plug>(CybuLastusedNext)")
 ```
 
 ## Configuration
@@ -114,7 +114,7 @@ require("cybu").setup({
 
 ## Features
 
-- Two modes: cycle `:buffers` list or cycle buffer history
+- Two modes: cycle `:buffers` list or cycle last used buffers
 - Adaptive size of the **_Cybu_** window
 - Various styling & positioning options
 - Exclude filetypes and define fallback

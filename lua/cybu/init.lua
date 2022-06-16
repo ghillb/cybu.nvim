@@ -27,7 +27,7 @@ cybu.get_bufs = function()
     return true
   end, vim.api.nvim_list_bufs())
 
-  if _state.mode == "history" then
+  if _state.mode == "last_used" then
     table.sort(bids, function(a, b)
       return vim.fn.getbufinfo(a)[1].lastused > vim.fn.getbufinfo(b)[1].lastused
     end)
@@ -189,7 +189,7 @@ cybu.get_view = function()
     return create_default_view()
   end
 
-  local function create_history_view()
+  local function create_last_used_view()
     _state.increment = _state.direction == v.direction.next and 1 or -1
     local frame_count = math.ceil(ecount / c.opts.position.max_win_height)
     local frame_nr = 1
@@ -204,8 +204,8 @@ cybu.get_view = function()
     return vim.list_slice(_state.entries, first, last)
   end
 
-  if _state.mode == v.mode.history then
-    return create_history_view()
+  if _state.mode == v.mode.last_used then
+    return create_last_used_view()
   end
 end
 
@@ -247,7 +247,7 @@ cybu.get_cybu_buf = function()
     end
   end
 
-  if _state.mode == v.mode.history then
+  if _state.mode == v.mode.last_used then
     vim.api.nvim_buf_add_highlight(
       cybu_buf,
       _state.cybu_ns,
@@ -318,7 +318,7 @@ cybu.show_cybu_win = function()
   end
   _state.cybu_win_timer = vim.defer_fn(function()
     close_cybu_win()
-    if _state.mode == v.mode.history then
+    if _state.mode == v.mode.last_used then
       local target = _state.bufs[_state.focus + 1]
       _state.focus = nil
       return target and vim.api.nvim_win_set_buf(0, target.id)
@@ -338,7 +338,7 @@ end
 --- Function to trigger buffer cycling into {direction}.
 -- @usage require'cybu'.cycle(direction)
 -- @param direction string: 'next' or 'prev'
--- @param mode string: 'default' or 'history'
+-- @param mode string: 'default' or 'last_used'
 cybu.cycle = function(direction, mode)
   vim.validate({ direction = { direction, "string", false } })
   local filetype = vim.api.nvim_buf_get_option(vim.api.nvim_get_current_buf(), "filetype")
