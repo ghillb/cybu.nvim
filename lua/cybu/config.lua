@@ -22,10 +22,14 @@ local default_config = {
       enabled = true,
       colored = true,
     },
+    infobar = {
+      enabled = true,
+    },
     highlights = {
       current_buffer = "CybuFocus",
       adjacent_buffers = "CybuAdjacent",
       background = "CubuBackground",
+      infobar = "CybuInfobar",
     },
   },
   display_time = 750,

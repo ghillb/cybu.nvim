@@ -2,6 +2,7 @@
 local c = require("cybu.config")
 local u = require("cybu.utils")
 local v = require("cybu.vars")
+local infobar = require("cybu.infobar")
 local cybu, _state = {}, {}
 
 --- Setup function to initialize cybu.
@@ -107,6 +108,7 @@ cybu.get_widths = function()
   if max_win_width % 1 ~= 0 then
     max_win_width = math.ceil(max_win_width * frame_width)
   end
+
   return {
     entry = max_entry_width,
     win = math.min(max_win_width, max_entry_width),
@@ -162,7 +164,6 @@ end
 
 cybu.get_view = function()
   local ecount = #_state.entries
-  _state.win_height = math.min(ecount, c.opts.position.max_win_height)
   local function create_default_view()
     local view, offset1, offset2 = {}, 0, 1
 
@@ -190,17 +191,8 @@ cybu.get_view = function()
   end
 
   local function create_last_used_view()
-    _state.increment = _state.direction == v.direction.next and 1 or -1
-    local frame_count = math.ceil(ecount / c.opts.position.max_win_height)
-    local frame_nr = 1
-    if _state.focus then
-      frame_nr = math.floor((_state.focus + _state.increment) % ecount / _state.win_height) % frame_count + 1
-      _state.focus = (_state.focus + _state.increment) % #_state.bufs
-    else
-      _state.focus = 1
-    end
-    local first = (frame_nr - 1) * c.opts.position.max_win_height + 1
-    local last = frame_nr * c.opts.position.max_win_height
+    local first = (_state.frame_nr - 1) * c.opts.position.max_win_height + 1
+    local last = _state.frame_nr * c.opts.position.max_win_height
     return vim.list_slice(_state.entries, first, last)
   end
 
@@ -257,6 +249,18 @@ cybu.get_cybu_buf = function()
       -1
     )
   end
+
+  if c.opts.style.infobar.enabled then
+    vim.api.nvim_buf_set_lines(cybu_buf, -1, -1, true, { _state.infobar })
+    vim.api.nvim_buf_add_highlight(
+      cybu_buf,
+      _state.cybu_ns,
+      c.opts.style.highlights.infobar,
+      #vim.api.nvim_buf_get_lines(cybu_buf, 0, -1, false) - 1,
+      0,
+      -1
+    )
+  end
   return cybu_buf
 end
 
@@ -286,7 +290,7 @@ cybu.show_cybu_win = function()
   local win_opts = {
     relative = c.opts.position.relative_to,
     width = _state.widths.win,
-    height = #_state.view,
+    height = #_state.view + (c.opts.style.infobar.enabled and 1 or 0),
     row = win_pos.row,
     col = win_pos.col,
     anchor = win_pos.anchor,
@@ -328,10 +332,24 @@ end
 
 cybu.populate_state = function()
   _state.current_buf = vim.api.nvim_get_current_buf()
+  _state.increment = _state.direction == v.direction.next and 1 or -1
   _state.bufs = (not _state.focus or _state.mode == v.mode.default) and cybu.get_bufs() or _state.bufs
+  _state.bcount = #_state.bufs
+  _state.win_height = math.min(_state.bcount, c.opts.position.max_win_height)
+  _state.frame_count = math.ceil(_state.bcount / c.opts.position.max_win_height)
+  if _state.focus then
+    _state.frame_nr = math.floor((_state.focus + _state.increment) % _state.bcount / _state.win_height)
+        % _state.frame_count
+      + 1
+    _state.focus = (_state.focus + _state.increment) % #_state.bufs
+  else
+    _state.focus = 1
+    _state.frame_nr = 1
+  end
   _state.widths = cybu.get_widths()
   _state.entries = cybu.get_entries()
   _state.view = cybu.get_view()
+  _state.infobar = c.opts.style.infobar.enabled and infobar.get_infobar(_state)
   _state.cybu_buf = cybu.get_cybu_buf()
 end
 
