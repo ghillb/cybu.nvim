@@ -1,5 +1,7 @@
 <Plug>(CybuNext)	cybu.nvim.txt	/*<Plug>(CybuNext)*
 <Plug>(CybuPrev)	cybu.nvim.txt	/*<Plug>(CybuPrev)*
+CybuLastusedNext	cybu.nvim.txt	/*CybuLastusedNext*
+CybuLastusedPrev	cybu.nvim.txt	/*CybuLastusedPrev*
 CybuNext	cybu.nvim.txt	/*CybuNext*
 CybuPrev	cybu.nvim.txt	/*CybuPrev*
 cybu-autocmds	cybu.nvim.txt	/*cybu-autocmds*
