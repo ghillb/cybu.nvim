@@ -33,7 +33,7 @@ cybu.get_bufs = function()
     end)
   end
 
-  for i, id in ipairs(bids) do
+  for _, id in ipairs(bids) do
     local name = vim.fn.bufname(id)
     -- trim buf names
     if c.opts.style.path == v.style_path.relative then
