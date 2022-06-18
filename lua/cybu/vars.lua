@@ -2,6 +2,12 @@ local vars = {}
 
 vars.mode = { default = "default", last_used = "last_used" }
 vars.direction = { next = "next", prev = "prev" }
+vars.behavior = {
+  switch_mode = {
+    immediate = "immediate",
+    on_close = "on_close",
+  },
+}
 vars.style_path = { absolute = "absolute", relative = "relative", tail = "tail" }
 vars.pos_relative_to = { win = "win", editor = "editor", cursor = "cursor" }
 vars.pos_anchor = {

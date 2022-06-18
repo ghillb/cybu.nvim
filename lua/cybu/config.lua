@@ -32,6 +32,16 @@ local default_config = {
       infobar = "CybuInfobar",
     },
   },
+  behavior = {
+    mode = {
+      default = {
+        switch = "immediate",
+      },
+      last_used = {
+        switch = "on_close",
+      },
+    },
+  },
   display_time = 750,
   exclude = {},
   fallback = nil,
