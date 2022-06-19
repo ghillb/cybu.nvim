@@ -23,7 +23,7 @@ local default_config = {
       colored = true,
     },
     infobar = {
-      enabled = true,
+      enabled = false,
     },
     highlights = {
       current_buffer = "CybuFocus",
@@ -36,9 +36,11 @@ local default_config = {
     mode = {
       default = {
         switch = "immediate",
+        view = "rolling",
       },
       last_used = {
         switch = "on_close",
+        view = "paging",
       },
     },
   },

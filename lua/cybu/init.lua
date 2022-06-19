@@ -157,9 +157,31 @@ cybu.get_entries = function()
 end
 
 cybu.get_view = function()
-  local first = (_state.frame_nr - 1) * c.opts.position.max_win_height + 1
-  local last = _state.frame_nr * c.opts.position.max_win_height
-  return vim.list_slice(_state.entries, first, last)
+  if _state.is_rolling_view then
+    local view, offset1, offset2 = {}, 0, 1
+
+    if _state.win_height % 2 == 1 then
+      offset1, offset2 = offset2, offset1
+    end
+
+    local first = _state.focus - (_state.win_height - offset1) / 2 + offset2
+    local last = _state.focus + (_state.win_height - offset1) / 2
+
+    for i = first, last do
+      if i <= 0 then
+        table.insert(view, _state.entries[i + _state.bcount])
+      elseif i > _state.bcount then
+        table.insert(view, _state.entries[i - _state.bcount])
+      else
+        table.insert(view, _state.entries[i])
+      end
+    end
+    return view
+  else
+    local first = (_state.frame_nr - 1) * c.opts.position.max_win_height + 1
+    local last = _state.frame_nr * c.opts.position.max_win_height
+    return vim.list_slice(_state.entries, first, last)
+  end
 end
 
 cybu.get_cybu_buf = function()
@@ -189,11 +211,18 @@ cybu.get_cybu_buf = function()
     end
   end
 
+  local lnum_highlight
+  if _state.is_rolling_view then
+    lnum_highlight = math.ceil(_state.win_height / 2) - 1
+  else
+    lnum_highlight = (_state.focus - 1) % _state.win_height
+  end
+
   vim.api.nvim_buf_add_highlight(
     cybu_buf,
     _state.cybu_ns,
     c.opts.style.highlights.current_buffer,
-    (_state.focus - 1) % _state.win_height,
+    lnum_highlight,
     0,
     -1
   )
@@ -279,6 +308,14 @@ cybu.show_cybu_win = function()
 end
 
 cybu.populate_state = function()
+  _state.is_rolling_view = c.opts.behavior.mode.default.view == v.behavior.view_type.rolling
+      and _state.mode == v.mode.default
+    or c.opts.behavior.mode.last_used.view == v.behavior.view_type.rolling and _state.mode == v.mode.last_used
+
+  _state.switch_on_close = c.opts.behavior.mode.default.switch == v.behavior.switch_mode.on_close
+      and _state.mode == v.mode.default
+    or c.opts.behavior.mode.last_used.switch == v.behavior.switch_mode.on_close and _state.mode == v.mode.last_used
+
   _state.current_buf = vim.api.nvim_get_current_buf()
   _state.increment = _state.direction == v.direction.next and 1 or -1
   _state.bufs = not _state.focus and cybu.get_bufs() or _state.bufs
@@ -293,9 +330,6 @@ cybu.populate_state = function()
   _state.view = cybu.get_view()
   _state.infobar = c.opts.style.infobar.enabled and infobar.get_infobar(_state)
   _state.cybu_buf = cybu.get_cybu_buf()
-  _state.switch_on_close = c.opts.behavior.mode.default.switch == v.behavior.switch_mode.on_close
-      and _state.mode == v.mode.default
-    or c.opts.behavior.mode.last_used.switch == v.behavior.switch_mode.on_close and _state.mode == v.mode.last_used
 end
 
 --- Function to trigger buffer cycling into {direction}.

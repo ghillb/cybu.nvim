@@ -101,6 +101,18 @@ require("cybu").setup({
       background = "CybuBackground",      -- for the window background
     },
   },
+  behavior = {                    -- set behavior for different modes
+    mode = {
+      default = {
+        switch = "immediate",     -- immediate, on_close
+        view = "rolling",         -- paging, rolling
+      },
+      last_used = {
+        switch = "on_close",      -- immediate, on_close
+        view = "paging",          -- paging, rolling
+      },
+    },
+  },
   display_time = 750,             -- time the cybu window is displayed
   exclude = {                     -- filetypes, cybu will not be active
     "neo-tree",

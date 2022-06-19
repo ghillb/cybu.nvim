@@ -7,6 +7,10 @@ vars.behavior = {
     immediate = "immediate",
     on_close = "on_close",
   },
+  view_type = {
+    rolling = "rolling",
+    paging = "paging",
+  },
 }
 vars.style_path = { absolute = "absolute", relative = "relative", tail = "tail" }
 vars.pos_relative_to = { win = "win", editor = "editor", cursor = "cursor" }
