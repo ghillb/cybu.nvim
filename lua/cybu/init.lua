@@ -292,8 +292,11 @@ cybu.show_cybu_win = function()
   if not _state.cybu_win_id then
     _state.cybu_win_id = vim.api.nvim_open_win(_state.cybu_buf, false, win_opts)
     vim.api.nvim_exec_autocmds("User", { pattern = "CybuOpen" })
-    vim.api.nvim_win_set_option(_state.cybu_win_id, "winhl", "NormalFloat:" .. c.opts.style.highlights.background)
-    -- vim.api.nvim_win_set_option(state.cybu_win_id), "winbl", c.opts.style.winblend)
+    vim.api.nvim_win_set_option(
+      _state.cybu_win_id,
+      "winhl",
+      string.format("NormalFloat:%s,FloatBorder:%s", c.opts.style.highlights.background, c.opts.style.highlights.border)
+    )
   end
 
   if _state.cybu_win_timer then
@@ -320,6 +323,10 @@ cybu.populate_state = function()
   _state.increment = _state.direction == v.direction.next and 1 or -1
   _state.bufs = not _state.focus and cybu.get_bufs() or _state.bufs
   _state.bcount = #_state.bufs
+  if _state.bcount == 0 then
+    vim.notify("Cybu: No switchable buffers", vim.log.levels.INFO)
+    return false
+  end
   _state.win_height = math.min(_state.bcount, c.opts.position.max_win_height)
   _state.frame_count = math.ceil(_state.bcount / c.opts.position.max_win_height)
   _state.focus = ((_state.focus or _state.lookup[_state.current_buf]) + _state.increment) % (_state.bcount + 1)
@@ -330,6 +337,7 @@ cybu.populate_state = function()
   _state.view = cybu.get_view()
   _state.infobar = c.opts.style.infobar.enabled and infobar.get_infobar(_state)
   _state.cybu_buf = cybu.get_cybu_buf()
+  return true
 end
 
 --- Function to trigger buffer cycling into {direction}.
@@ -347,7 +355,9 @@ cybu.cycle = function(direction, mode)
   end
   _state.mode = mode or v.mode.default
   _state.direction = direction
-  cybu.populate_state()
+  if not cybu.populate_state() then
+    return
+  end
   if not _state.switch_on_close then
     cybu.load_target_buf()
   end
