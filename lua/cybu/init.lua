@@ -2,6 +2,7 @@
 local c = require("cybu.config")
 local u = require("cybu.utils")
 local v = require("cybu.vars")
+local infobar = require("cybu.infobar")
 local cybu, _state = {}, {}
 
 --- Setup function to initialize cybu.
@@ -19,6 +20,7 @@ end
 
 cybu.get_bufs = function()
   local bufs = {}
+  _state.lookup = {}
   local cwd_path = vim.fn.getcwd() .. "/"
   local bids = vim.tbl_filter(function(id)
     if 1 ~= vim.fn.buflisted(id) then
@@ -33,7 +35,7 @@ cybu.get_bufs = function()
     end)
   end
 
-  for _, id in ipairs(bids) do
+  for i, id in ipairs(bids) do
     local name = vim.fn.bufname(id)
     -- trim buf names
     if c.opts.style.path == v.style_path.relative then
@@ -45,19 +47,15 @@ cybu.get_bufs = function()
       id = id,
       name = name,
     })
+    _state.lookup[id] = i
   end
 
   return bufs
 end
 
-cybu.load_target_buf = function(direction)
-  if direction == v.direction.next then
-    vim.cmd("bnext")
-  elseif direction == v.direction.prev then
-    vim.cmd("bprevious")
-  else
-    error("Invalid argument: '" .. direction .. "'. Allowed: " .. vim.inspect(v.direction))
-  end
+cybu.load_target_buf = function()
+  local target = _state.bufs[_state.focus]
+  return target and vim.api.nvim_win_set_buf(0, target.id)
 end
 
 cybu.get_widths = function()
@@ -107,6 +105,7 @@ cybu.get_widths = function()
   if max_win_width % 1 ~= 0 then
     max_win_width = math.ceil(max_win_width * frame_width)
   end
+
   return {
     entry = max_entry_width,
     win = math.min(max_win_width, max_entry_width),
@@ -124,9 +123,6 @@ cybu.get_entries = function()
   for i, b in ipairs(_state.bufs) do
     local bid = b.id
     local icon = u.get_icon(b.name, c.opts.style.devicons.enabled)
-    if bid == _state.current_buf then
-      _state.center = i
-    end
     if b.buf_id_width < _state.widths.buf_id then
       bid = bid .. string.rep(" ", _state.widths.buf_id - b.buf_id_width)
     end
@@ -161,51 +157,30 @@ cybu.get_entries = function()
 end
 
 cybu.get_view = function()
-  local ecount = #_state.entries
-  _state.win_height = math.min(ecount, c.opts.position.max_win_height)
-  local function create_default_view()
+  if _state.is_rolling_view then
     local view, offset1, offset2 = {}, 0, 1
 
     if _state.win_height % 2 == 1 then
       offset1, offset2 = offset2, offset1
     end
 
-    local first = _state.center - (_state.win_height - offset1) / 2 + offset2
-    local last = _state.center + (_state.win_height - offset1) / 2
+    local first = _state.focus - (_state.win_height - offset1) / 2 + offset2
+    local last = _state.focus + (_state.win_height - offset1) / 2
 
     for i = first, last do
       if i <= 0 then
-        table.insert(view, _state.entries[i + ecount])
-      elseif i > ecount then
-        table.insert(view, _state.entries[i - ecount])
+        table.insert(view, _state.entries[i + _state.bcount])
+      elseif i > _state.bcount then
+        table.insert(view, _state.entries[i - _state.bcount])
       else
         table.insert(view, _state.entries[i])
       end
     end
     return view
-  end
-
-  if _state.mode == v.mode.default then
-    return create_default_view()
-  end
-
-  local function create_last_used_view()
-    _state.increment = _state.direction == v.direction.next and 1 or -1
-    local frame_count = math.ceil(ecount / c.opts.position.max_win_height)
-    local frame_nr = 1
-    if _state.focus then
-      frame_nr = math.floor((_state.focus + _state.increment) % ecount / _state.win_height) % frame_count + 1
-      _state.focus = (_state.focus + _state.increment) % #_state.bufs
-    else
-      _state.focus = 1
-    end
-    local first = (frame_nr - 1) * c.opts.position.max_win_height + 1
-    local last = frame_nr * c.opts.position.max_win_height
+  else
+    local first = (_state.frame_nr - 1) * c.opts.position.max_win_height + 1
+    local last = _state.frame_nr * c.opts.position.max_win_height
     return vim.list_slice(_state.entries, first, last)
-  end
-
-  if _state.mode == v.mode.last_used then
-    return create_last_used_view()
   end
 end
 
@@ -222,18 +197,7 @@ cybu.get_cybu_buf = function()
 
   for lnum, line in ipairs(_state.view) do
     vim.api.nvim_buf_set_lines(cybu_buf, lnum - 1, -1, true, { line.entry })
-    if line.bid == _state.current_buf and _state.mode == v.mode.default then
-      vim.api.nvim_buf_add_highlight(cybu_buf, _state.cybu_ns, c.opts.style.highlights.current_buffer, lnum - 1, 0, -1)
-    else
-      vim.api.nvim_buf_add_highlight(
-        cybu_buf,
-        _state.cybu_ns,
-        c.opts.style.highlights.adjacent_buffers,
-        lnum - 1,
-        0,
-        -1
-      )
-    end
+    vim.api.nvim_buf_add_highlight(cybu_buf, _state.cybu_ns, c.opts.style.highlights.adjacent_buffers, lnum - 1, 0, -1)
 
     if _state.has_devicons and c.opts.style.devicons.enabled and c.opts.style.devicons.colored then
       vim.api.nvim_buf_add_highlight(
@@ -247,12 +211,29 @@ cybu.get_cybu_buf = function()
     end
   end
 
-  if _state.mode == v.mode.last_used then
+  local lnum_highlight
+  if _state.is_rolling_view then
+    lnum_highlight = math.ceil(_state.win_height / 2) - 1
+  else
+    lnum_highlight = (_state.focus - 1) % _state.win_height
+  end
+
+  vim.api.nvim_buf_add_highlight(
+    cybu_buf,
+    _state.cybu_ns,
+    c.opts.style.highlights.current_buffer,
+    lnum_highlight,
+    0,
+    -1
+  )
+
+  if c.opts.style.infobar.enabled then
+    vim.api.nvim_buf_set_lines(cybu_buf, -1, -1, true, { _state.infobar })
     vim.api.nvim_buf_add_highlight(
       cybu_buf,
       _state.cybu_ns,
-      c.opts.style.highlights.current_buffer,
-      _state.focus % _state.win_height,
+      c.opts.style.highlights.infobar,
+      #vim.api.nvim_buf_get_lines(cybu_buf, 0, -1, false) - 1,
       0,
       -1
     )
@@ -286,7 +267,7 @@ cybu.show_cybu_win = function()
   local win_opts = {
     relative = c.opts.position.relative_to,
     width = _state.widths.win,
-    height = #_state.view,
+    height = #_state.view + (c.opts.style.infobar.enabled and 1 or 0),
     row = win_pos.row,
     col = win_pos.col,
     anchor = win_pos.anchor,
@@ -299,6 +280,7 @@ cybu.show_cybu_win = function()
     pcall(vim.api.nvim_win_close, _state.cybu_win_id, true)
     vim.api.nvim_exec_autocmds("User", { pattern = "CybuClose" })
     _state.cybu_win_id = nil
+    _state.focus = nil
   end
 
   if _state.cybu_win_id and c.opts.position.relative_to == v.pos_relative_to.cursor then
@@ -313,25 +295,40 @@ cybu.show_cybu_win = function()
     vim.api.nvim_win_set_option(_state.cybu_win_id, "winhl", "NormalFloat:" .. c.opts.style.highlights.background)
     -- vim.api.nvim_win_set_option(state.cybu_win_id), "winbl", c.opts.style.winblend)
   end
+
   if _state.cybu_win_timer then
     _state.cybu_win_timer:stop()
   end
   _state.cybu_win_timer = vim.defer_fn(function()
-    close_cybu_win()
-    if _state.mode == v.mode.last_used then
-      local target = _state.bufs[_state.focus + 1]
-      _state.focus = nil
-      return target and vim.api.nvim_win_set_buf(0, target.id)
+    if _state.switch_on_close then
+      cybu.load_target_buf()
     end
+    close_cybu_win()
   end, c.opts.display_time)
 end
 
 cybu.populate_state = function()
+  _state.is_rolling_view = c.opts.behavior.mode.default.view == v.behavior.view_type.rolling
+      and _state.mode == v.mode.default
+    or c.opts.behavior.mode.last_used.view == v.behavior.view_type.rolling and _state.mode == v.mode.last_used
+
+  _state.switch_on_close = c.opts.behavior.mode.default.switch == v.behavior.switch_mode.on_close
+      and _state.mode == v.mode.default
+    or c.opts.behavior.mode.last_used.switch == v.behavior.switch_mode.on_close and _state.mode == v.mode.last_used
+
   _state.current_buf = vim.api.nvim_get_current_buf()
-  _state.bufs = (not _state.focus or _state.mode == v.mode.default) and cybu.get_bufs() or _state.bufs
+  _state.increment = _state.direction == v.direction.next and 1 or -1
+  _state.bufs = not _state.focus and cybu.get_bufs() or _state.bufs
+  _state.bcount = #_state.bufs
+  _state.win_height = math.min(_state.bcount, c.opts.position.max_win_height)
+  _state.frame_count = math.ceil(_state.bcount / c.opts.position.max_win_height)
+  _state.focus = ((_state.focus or _state.lookup[_state.current_buf]) + _state.increment) % (_state.bcount + 1)
+  _state.focus = (_state.focus ~= 0) and _state.focus or (_state.increment == 1 and 1 or _state.bcount)
+  _state.frame_nr = math.floor((_state.focus - 1) / _state.win_height) % _state.frame_count + 1
   _state.widths = cybu.get_widths()
   _state.entries = cybu.get_entries()
   _state.view = cybu.get_view()
+  _state.infobar = c.opts.style.infobar.enabled and infobar.get_infobar(_state)
   _state.cybu_buf = cybu.get_cybu_buf()
 end
 
@@ -341,16 +338,19 @@ end
 -- @param mode string: 'default' or 'last_used'
 cybu.cycle = function(direction, mode)
   vim.validate({ direction = { direction, "string", false } })
+  if not vim.tbl_contains({ v.direction.next, v.direction.prev }, direction) then
+    error("Invalid direction: " .. tostring(direction))
+  end
   local filetype = vim.api.nvim_buf_get_option(vim.api.nvim_get_current_buf(), "filetype")
   if vim.tbl_contains(c.opts.exclude, filetype) then
     return c.opts.fallback and c.opts.fallback()
   end
   _state.mode = mode or v.mode.default
   _state.direction = direction
-  if _state.mode == v.mode.default then
-    cybu.load_target_buf(_state.direction)
-  end
   cybu.populate_state()
+  if not _state.switch_on_close then
+    cybu.load_target_buf()
+  end
   cybu.show_cybu_win()
 end
 

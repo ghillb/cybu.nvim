@@ -22,10 +22,26 @@ local default_config = {
       enabled = true,
       colored = true,
     },
+    infobar = {
+      enabled = false,
+    },
     highlights = {
       current_buffer = "CybuFocus",
       adjacent_buffers = "CybuAdjacent",
       background = "CubuBackground",
+      infobar = "CybuInfobar",
+    },
+  },
+  behavior = {
+    mode = {
+      default = {
+        switch = "immediate",
+        view = "rolling",
+      },
+      last_used = {
+        switch = "on_close",
+        view = "paging",
+      },
     },
   },
   display_time = 750,
