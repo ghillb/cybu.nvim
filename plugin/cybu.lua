@@ -57,4 +57,5 @@ vim.api.nvim_set_hl(0, "CybuFocus", {
 })
 vim.api.nvim_set_hl(0, "CybuAdjacent", { link = "Comment" })
 vim.api.nvim_set_hl(0, "CybuBackground", { link = "Normal" })
+vim.api.nvim_set_hl(0, "CybuBorder", { link = "FloatBorder" })
 vim.api.nvim_set_hl(0, "CybuInfobar", { link = "StatusLine" })

@@ -29,6 +29,7 @@ local default_config = {
       current_buffer = "CybuFocus",
       adjacent_buffers = "CybuAdjacent",
       background = "CubuBackground",
+      border = "CybuBorder",
       infobar = "CybuInfobar",
     },
   },

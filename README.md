@@ -96,9 +96,10 @@ require("cybu").setup({
       colored = true,             -- enable color for web dev icons
     },
     highlights = {                -- see highlights via :highlight
-      current_buffer = "CybuFocus",       -- for current / selected buffer
-      adjacent_buffers = "CybuAdjacent",  -- for buffers not in focus
-      background = "CybuBackground",      -- for the window background
+      current_buffer = "CybuFocus",       -- current / selected buffer
+      adjacent_buffers = "CybuAdjacent",  -- buffers not in focus
+      background = "CybuBackground",      -- window background
+      border = "CybuBorder",              -- border of the window
     },
   },
   behavior = {                    -- set behavior for different modes
