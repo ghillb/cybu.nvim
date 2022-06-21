@@ -34,9 +34,9 @@ See [:help cybu.nvim](https://github.com/ghillb/cybu.nvim/blob/main/doc/cybu.nvi
 ```lua
 use({
   "ghillb/cybu.nvim",
-  branch = "v1.x", -- won't receive breaking changes
-  -- branch = "main", -- timely updates
-  requires = { "kyazdani42/nvim-web-devicons" }, --optional
+  branch = "main", -- timely updates
+  -- branch = "v1.x", -- won't receive breaking changes
+  requires = { "kyazdani42/nvim-web-devicons" }, -- optional
   config = function()
     local ok, cybu = pcall(require, "cybu")
     if not ok then
@@ -63,9 +63,11 @@ Setup up **_Cybu_** by calling its setup function and placing the respective key
 require("cybu").setup()
 vim.keymap.set("n", "[b", "<Plug>(CybuPrev)")
 vim.keymap.set("n", "]b", "<Plug>(CybuNext)")
-vim.keymap.set("n", "<c-s-tab>", "<plug>(CybuLastusedPrev)")
-vim.keymap.set("n", "<c-tab>", "<plug>(CybuLastusedNext)")
+vim.keymap.set("n", "<s-tab>", "<plug>(CybuLastusedPrev)")
+vim.keymap.set("n", "<tab>", "<plug>(CybuLastusedNext)")
 ```
+
+Hint: If you use the `<tab>` key, map `vim.keymap.set( "n", "<c-i>", "<c-i>")` to keep it separate from `<c-i>` (See: [neovim/pull/17932](https://github.com/neovim/neovim/pull/17932#issue-1188088238)).
 
 ## Configuration
 
