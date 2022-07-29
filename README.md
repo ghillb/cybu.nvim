@@ -36,7 +36,7 @@ use({
   "ghillb/cybu.nvim",
   branch = "main", -- timely updates
   -- branch = "v1.x", -- won't receive breaking changes
-  requires = { "kyazdani42/nvim-web-devicons" }, -- optional
+  requires = { "kyazdani42/nvim-web-devicons", "nvim-lua/plenary.nvim"}, -- optional for icon support
   config = function()
     local ok, cybu = pcall(require, "cybu")
     if not ok then
@@ -96,6 +96,7 @@ require("cybu").setup({
     devicons = {
       enabled = true,             -- enable or disable web dev icons
       colored = true,             -- enable color for web dev icons
+      truncate = true,            -- truncate wide icons to one char width
     },
     highlights = {                -- see highlights via :highlight
       current_buffer = "CybuFocus",       -- current / selected buffer
@@ -142,8 +143,7 @@ If breaking changes (will be kept to a minimum) are of no concern to you, use th
 ## Roadmap
 
 - Add possibility to further customize the entry layout
-- Offer more modes to cycle buffers
-- Improve tests, tooling and add CI
+- Offer additional modes to cycle buffers
 
 ## Testing via [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
 

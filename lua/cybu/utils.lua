@@ -1,5 +1,5 @@
 local c = require("cybu.config")
-local plenary_loaded, strings = pcall(require, "plenary.strings")
+local has_plenary, strings = pcall(require, "plenary.strings")
 
 ---@class CybuUtils
 local utils = {}
@@ -21,7 +21,7 @@ local load_once = function(f)
   end
 end
 
-utils.get_icon = load_once(function()
+utils.get_icon_or_separator = load_once(function()
   local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
   if has_devicons then
@@ -37,7 +37,7 @@ utils.get_icon = load_once(function()
       local icon, highlight = devicons.get_icon(filename, string.match(filename, "%a+$"), { default = true })
 
       -- truncate some ambiwidth icons when plenary is installed
-      if plenary_loaded and (strings.strdisplaywidth(icon) > 1) then
+      if has_plenary and c.opts.style.devicons.truncate and (strings.strdisplaywidth(icon) > 1) then
         icon = strings.truncate(icon, 1)
       end
 

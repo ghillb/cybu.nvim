@@ -31,8 +31,8 @@ put this into the your packer startup function:
 >
     use({
       "ghillb/cybu.nvim",
-      branch = "v1.x", -- won't receive breaking changes
-      -- branch = "main", -- branch with timely updates
+      branch = "main", -- branch with timely updates
+      -- branch = "v1.x", -- won't receive breaking changes
       requires = { "kyazdani42/nvim-web-devicons" },
       config = function()
         require("cybu").setup()
@@ -84,6 +84,7 @@ The table below contains all config keys with some exemplary values.
       devicons = {
         enabled = true,             -- enable or disable web dev icons
         colored = true,             -- enable color for web dev icons
+        truncate = true,            -- truncate dev icons to one char width
       },
       highlights = {                -- see highlights via :highlight
         current_buffer = "CybuFocus",       -- current / selected buffer

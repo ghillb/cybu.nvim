@@ -4,6 +4,7 @@ local u = require("cybu.utils")
 local v = require("cybu.vars")
 local infobar = require("cybu.infobar")
 local cybu, _state = {}, {}
+local has_plenary, strings = pcall(require, "plenary.strings")
 
 --- Setup function to initialize cybu.
 -- Call with config table or without to use default values.
@@ -15,6 +16,9 @@ cybu.setup = function(user_config)
   _state.has_devicons = pcall(require, "nvim-web-devicons")
   if c.opts.style.devicons.enabled and not _state.has_devicons then
     vim.notify("Cybu: nvim-web-devicons enabled, but not installed\n", vim.log.levels.WARN)
+    if not has_plenary then
+      vim.notify("Cybu: plenary.nvim needed, but not installed\n", vim.log.levels.ERROR)
+    end
   end
 end
 
@@ -46,6 +50,7 @@ cybu.get_bufs = function()
     table.insert(bufs, {
       id = id,
       name = name,
+      icon = u.get_icon_or_separator(name, c.opts.style.devicons.enabled),
     })
     _state.lookup[id] = i
   end
@@ -61,7 +66,7 @@ end
 cybu.get_widths = function()
   local max_buf_id_width = 0
   local max_buf_name_width = 0
-  local icon_width = 1
+  local max_icon_width = 0
   local separator_width = #c.opts.style.separator
   if not c.opts.style.hide_buffer_id and _state.has_devicons and c.opts.style.devicons.enabled then
     separator_width = separator_width * 2
@@ -69,17 +74,17 @@ cybu.get_widths = function()
     separator_width = 0
   end
 
-  if not _state.has_devicons or not c.opts.style.devicons.enabled then
-    icon_width = 0
+  for _, b in ipairs(_state.bufs) do
+    b.buf_id_width = #tostring(b.id)
+    b.buf_name_width = #b.name
+    b.buf_icon_width = has_plenary and strings.strdisplaywidth(b.icon.text) or 1
+    max_buf_id_width = math.max(b.buf_id_width, max_buf_id_width)
+    max_buf_name_width = math.max(b.buf_name_width, max_buf_name_width)
+    max_icon_width = math.max(b.buf_icon_width, max_icon_width)
   end
 
-  for _, b in ipairs(_state.bufs) do
-    local buf_id_width = #tostring(b.id)
-    local buf_name_width = #b.name
-    max_buf_id_width = math.max(buf_id_width, max_buf_id_width)
-    max_buf_name_width = math.max(buf_name_width, max_buf_name_width)
-    b.buf_id_width = buf_id_width
-    b.buf_name_width = buf_name_width
+  if not _state.has_devicons or not c.opts.style.devicons.enabled then
+    max_icon_width = 0
   end
 
   if c.opts.style.hide_buffer_id then
@@ -89,7 +94,7 @@ cybu.get_widths = function()
   local max_entry_width = max_buf_id_width
     + max_buf_name_width
     + separator_width
-    + icon_width
+    + max_icon_width
     + 2 * c.opts.style.padding
 
   -- max cybu win width
@@ -113,7 +118,7 @@ cybu.get_widths = function()
     buf_name = max_buf_name_width,
     separator = separator_width,
     prefix = u.strlen(c.opts.style.prefix),
-    icon = icon_width,
+    icon = max_icon_width,
   }
 end
 
@@ -122,7 +127,6 @@ cybu.get_entries = function()
   local pad_str = string.rep(" ", c.opts.style.padding)
   for i, b in ipairs(_state.bufs) do
     local bid = b.id
-    local icon = u.get_icon(b.name, c.opts.style.devicons.enabled)
     if b.buf_id_width < _state.widths.buf_id then
       bid = bid .. string.rep(" ", _state.widths.buf_id - b.buf_id_width)
     end
@@ -137,8 +141,8 @@ cybu.get_entries = function()
       entry = bid .. c.opts.style.separator
     end
 
-    if _state.has_devicons and c.opts.style.devicons.enabled then
-      entry = entry .. icon.text .. c.opts.style.separator
+    if _state.has_devicons and has_plenary and c.opts.style.devicons.enabled then
+      entry = entry .. b.icon.text .. string.rep(" ", _state.widths.icon - b.buf_icon_width) .. c.opts.style.separator
     end
     if entry_width > _state.widths.win then
       entry = entry .. c.opts.style.prefix .. b.name:sub(entry_width + 1 + _state.widths.prefix - _state.widths.win)
@@ -151,7 +155,7 @@ cybu.get_entries = function()
     else
       entry = entry .. string.rep(" ", _state.widths.win - entry_width)
     end
-    entries[i] = { entry = entry, bid = b.id, icon_highlight = icon.highlight }
+    entries[i] = { entry = entry, bid = b.id, icon_highlight = b.icon.highlight }
   end
   return entries
 end
@@ -206,7 +210,7 @@ cybu.get_cybu_buf = function()
         line.icon_highlight,
         lnum - 1,
         _state.widths.buf_id + c.opts.style.padding,
-        _state.widths.buf_id + c.opts.style.padding + _state.widths.separator + 3 * _state.widths.icon
+        _state.widths.buf_id + c.opts.style.padding + _state.widths.separator + 3
       )
     end
   end
