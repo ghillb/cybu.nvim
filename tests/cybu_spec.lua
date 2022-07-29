@@ -65,6 +65,7 @@ describe("Cybu:", function()
     assert.True(vim.inspect(cybu.get_bufs()[1]) == vim.inspect({
       id = 1,
       name = "",
+      icon = { highlight = "DevIconDefault", text = "" },
     }))
   end)
 end)
@@ -90,7 +91,7 @@ end)
 describe("Utils:", function()
   it("icons can be requested", function()
     local utils = require("cybu.utils")
-    local icon = utils.get_icon("test.lua", true)
+    local icon = utils.get_icon_or_separator("test.lua", true)
     assert.same(icon.text, "")
     assert.same(icon.highlight, "DevIconLua")
   end)
@@ -98,8 +99,9 @@ end)
 
 describe("Utils:", function()
   it("icons that use more than one char are truncated", function()
+    require("cybu").setup({ style = { devicons = { enabled = true, truncate = true } } })
     local utils = require("cybu.utils")
-    local icon = utils.get_icon("test.xml", true)
+    local icon = utils.get_icon_or_separator("test.xml", true)
     assert.same(icon.text, "…")
   end)
 end)

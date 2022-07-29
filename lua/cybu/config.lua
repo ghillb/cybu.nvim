@@ -21,6 +21,7 @@ local default_config = {
     devicons = {
       enabled = true,
       colored = true,
+      truncate = true,
     },
     infobar = {
       enabled = false,

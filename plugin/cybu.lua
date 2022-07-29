@@ -55,7 +55,10 @@ vim.api.nvim_set_hl(0, "CybuFocus", {
   fg = vim.api.nvim_get_hl_by_name("Normal", true).foreground,
   bg = vim.api.nvim_get_hl_by_name("Visual", true).background,
 })
-vim.api.nvim_set_hl(0, "CybuAdjacent", { link = "Comment" })
+vim.api.nvim_set_hl(0, "CybuAdjacent", {
+  fg = vim.api.nvim_get_hl_by_name("Comment", true).foreground,
+  bg = vim.api.nvim_get_hl_by_name("Comment", true).background,
+})
 vim.api.nvim_set_hl(0, "CybuBackground", { link = "Normal" })
 vim.api.nvim_set_hl(0, "CybuBorder", { link = "FloatBorder" })
 vim.api.nvim_set_hl(0, "CybuInfobar", { link = "StatusLine" })
