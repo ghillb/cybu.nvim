@@ -199,9 +199,26 @@ cybu.get_cybu_buf = function()
     cybu_buf = _state.cybu_buf
   end
 
+  local lnum_highlight_current_buf
+  if _state.is_rolling_view then
+    lnum_highlight_current_buf = math.ceil(_state.win_height / 2) - 1
+  else
+    lnum_highlight_current_buf = (_state.focus - 1) % _state.win_height
+  end
+
   for lnum, line in ipairs(_state.view) do
     vim.api.nvim_buf_set_lines(cybu_buf, lnum - 1, -1, true, { line.entry })
-    vim.api.nvim_buf_add_highlight(cybu_buf, _state.cybu_ns, c.opts.style.highlights.adjacent_buffers, lnum - 1, 0, -1)
+
+    if lnum - 1 ~= lnum_highlight_current_buf then
+      vim.api.nvim_buf_add_highlight(
+        cybu_buf,
+        _state.cybu_ns,
+        c.opts.style.highlights.adjacent_buffers,
+        lnum - 1,
+        0,
+        -1
+      )
+    end
 
     if _state.has_devicons and c.opts.style.devicons.enabled and c.opts.style.devicons.colored then
       vim.api.nvim_buf_add_highlight(
@@ -215,18 +232,11 @@ cybu.get_cybu_buf = function()
     end
   end
 
-  local lnum_highlight
-  if _state.is_rolling_view then
-    lnum_highlight = math.ceil(_state.win_height / 2) - 1
-  else
-    lnum_highlight = (_state.focus - 1) % _state.win_height
-  end
-
   vim.api.nvim_buf_add_highlight(
     cybu_buf,
     _state.cybu_ns,
     c.opts.style.highlights.current_buffer,
-    lnum_highlight,
+    lnum_highlight_current_buf,
     0,
     -1
   )
