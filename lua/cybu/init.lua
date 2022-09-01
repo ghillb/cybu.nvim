@@ -363,8 +363,7 @@ cybu.cycle = function(direction, mode)
   if not vim.tbl_contains({ v.direction.next, v.direction.prev }, direction) then
     error("Invalid direction: " .. tostring(direction))
   end
-  local filetype = vim.api.nvim_buf_get_option(vim.api.nvim_get_current_buf(), "filetype")
-  if vim.tbl_contains(c.opts.exclude, filetype) then
+  if vim.tbl_contains(c.opts.exclude, vim.bo.filetype) or vim.bo.buftype == "nofile" or not vim.bo.buflisted then
     return c.opts.fallback and c.opts.fallback()
   end
   _state.mode = mode or v.mode.default
