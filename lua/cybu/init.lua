@@ -36,16 +36,20 @@ local function shorten_path(path, preffered_separator)
   end
 
   local split_path = vim.fn.split(path, preffered_separator)
+  local filename = split_path[#split_path]
+
+  -- we remove the last element so that we don't have duplicated first letters of filenames later
+  table.remove(split_path, #split_path)
+
   local shortened_path = table.concat(
-    vim.tbl_map(
-      get_first,
-      split_path
-    ),
+    vim.tbl_map(get_first, split_path),
     preffered_separator
   )
 
-  local filename = split_path[#split_path]
-  return format_path(shortened_path) .. filename
+  return
+    format_path(shortened_path)
+      .. preffered_separator
+      .. filename
 end
 
 --- Setup function to initialize cybu.
