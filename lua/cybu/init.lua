@@ -6,6 +6,48 @@ local infobar = require("cybu.infobar")
 local cybu, _state = {}, {}
 local has_plenary, strings = pcall(require, "plenary.strings")
 
+local function get_preffered_path_separator()
+  if vim.fn.has('win32') then
+    return '\\'
+  else
+    return '/'
+  end
+end
+
+local function get_alternate_separator(sep)
+  if sep == '\\' then
+    return '/'
+  else
+    return '\\'
+  end
+end
+
+local function format_path(path)
+  if vim.fn.has('win32') then
+    return path:sub(1, 1) .. ':' .. path:sub(2, -1)
+  else
+    return '/' .. path
+  end
+end
+
+local function shorten_path(path, preffered_separator)
+  local get_first = function(path_elem)
+    return path_elem:sub(1, 1)
+  end
+
+  local split_path = vim.fn.split(path, preffered_separator)
+  local shortened_path = table.concat(
+    vim.tbl_map(
+      get_first,
+      split_path
+    ),
+    preffered_separator
+  )
+
+  local filename = split_path[#split_path]
+  return format_path(shortened_path) .. filename
+end
+
 --- Setup function to initialize cybu.
 -- Call with config table or without to use default values.
 -- @usage require'cybu'.setup()
@@ -46,6 +88,12 @@ cybu.get_bufs = function()
       name = string.gsub(name, cwd_path, "")
     elseif c.opts.style.path == v.style_path.tail then
       name = vim.fn.fnamemodify(name, ":t")
+    elseif c.opts.style.path == v.style_path.shortened then
+      local preffered_separator = get_preffered_path_separator()
+      local alternate_separator = get_alternate_separator(preffered_separator)
+      local normalized_name = vim.fn.fnamemodify(name, ':p'):gsub(alternate_separator, preffered_separator)
+
+      name = shorten_path(normalized_name, preffered_separator)
     end
     table.insert(bufs, {
       id = id,
