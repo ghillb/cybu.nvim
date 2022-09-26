@@ -54,4 +54,49 @@ utils.get_icon_or_separator = load_once(function()
   end
 end)
 
+local function adjust_absolute_path_head_for_os(path)
+  if vim.fn.has('win32') then
+    return path:sub(1, 1) .. ':' .. path:sub(2, -1)
+  end
+end
+
+function utils.get_preffered_path_separator()
+  if vim.fn.has('win32') == 1 then
+    return '\\'
+  else
+    return '/'
+  end
+end
+
+function utils.get_alternate_separator(sep)
+  if sep == '\\' then
+    return '/'
+  else
+    return '\\'
+  end
+end
+
+function utils.shorten_path(path, preffered_separator)
+  local get_first = function(path_elem)
+    return path_elem:sub(1, 1)
+  end
+
+  local split_path = vim.fn.split(path, preffered_separator)
+  local filename = split_path[#split_path]
+
+  -- we remove the last element so that we don't have duplicated first letters of filenames later
+  table.remove(split_path, #split_path)
+
+  local shortened_path = table.concat(
+    vim.tbl_map(get_first, split_path),
+    preffered_separator
+  )
+
+  return
+    adjust_absolute_path_head_for_os(shortened_path)
+      .. preffered_separator
+      .. filename
+end
+
+
 return utils

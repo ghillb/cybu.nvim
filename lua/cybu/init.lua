@@ -6,50 +6,6 @@ local infobar = require("cybu.infobar")
 local cybu, _state = {}, {}
 local has_plenary, strings = pcall(require, "plenary.strings")
 
-local function get_preffered_path_separator()
-  if vim.fn.has('win32') == 1 then
-    return '\\'
-  else
-    return '/'
-  end
-end
-
-local function get_alternate_separator(sep)
-  if sep == '\\' then
-    return '/'
-  else
-    return '\\'
-  end
-end
-
-local function adjust_absolute_path_head_for_os(path)
-  if vim.fn.has('win32') then
-    return path:sub(1, 1) .. ':' .. path:sub(2, -1)
-  end
-end
-
-local function shorten_path(path, preffered_separator)
-  local get_first = function(path_elem)
-    return path_elem:sub(1, 1)
-  end
-
-  local split_path = vim.fn.split(path, preffered_separator)
-  local filename = split_path[#split_path]
-
-  -- we remove the last element so that we don't have duplicated first letters of filenames later
-  table.remove(split_path, #split_path)
-
-  local shortened_path = table.concat(
-    vim.tbl_map(get_first, split_path),
-    preffered_separator
-  )
-
-  return
-    adjust_absolute_path_head_for_os(shortened_path)
-      .. preffered_separator
-      .. filename
-end
-
 --- Setup function to initialize cybu.
 -- Call with config table or without to use default values.
 -- @usage require'cybu'.setup()
@@ -91,11 +47,11 @@ cybu.get_bufs = function()
     elseif c.opts.style.path == v.style_path.tail then
       name = vim.fn.fnamemodify(name, ":t")
     elseif c.opts.style.path == v.style_path.shortened then
-      local preffered_separator = get_preffered_path_separator()
-      local alternate_separator = get_alternate_separator(preffered_separator)
+      local preffered_separator = u.get_preffered_path_separator()
+      local alternate_separator = u.get_alternate_separator(preffered_separator)
       local normalized_name = vim.fn.fnamemodify(name, ':p'):gsub(alternate_separator, preffered_separator)
 
-      name = shorten_path(normalized_name, preffered_separator)
+      name = u.shorten_path(normalized_name, preffered_separator)
     end
     table.insert(bufs, {
       id = id,
