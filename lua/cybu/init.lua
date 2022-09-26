@@ -7,7 +7,7 @@ local cybu, _state = {}, {}
 local has_plenary, strings = pcall(require, "plenary.strings")
 
 local function get_preffered_path_separator()
-  if vim.fn.has('win32') then
+  if vim.fn.has('win32') == 1 then
     return '\\'
   else
     return '/'
