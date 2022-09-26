@@ -22,11 +22,9 @@ local function get_alternate_separator(sep)
   end
 end
 
-local function format_path(path)
+local function adjust_absolute_path_head_for_os(path)
   if vim.fn.has('win32') then
     return path:sub(1, 1) .. ':' .. path:sub(2, -1)
-  else
-    return '/' .. path
   end
 end
 
@@ -47,7 +45,7 @@ local function shorten_path(path, preffered_separator)
   )
 
   return
-    format_path(shortened_path)
+    adjust_absolute_path_head_for_os(shortened_path)
       .. preffered_separator
       .. filename
 end
