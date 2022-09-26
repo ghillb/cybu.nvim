@@ -47,11 +47,8 @@ cybu.get_bufs = function()
     elseif c.opts.style.path == v.style_path.tail then
       name = vim.fn.fnamemodify(name, ":t")
     elseif c.opts.style.path == v.style_path.shortened then
-      local preffered_separator = u.get_preffered_path_separator()
-      local alternate_separator = u.get_alternate_separator(preffered_separator)
-      local normalized_name = vim.fn.fnamemodify(name, ':p'):gsub(alternate_separator, preffered_separator)
-
-      name = u.shorten_path(normalized_name, preffered_separator)
+      local full_path = vim.fn.fnamemodify(name, ':p')
+      name = u.shorten_path(full_path)
     end
     table.insert(bufs, {
       id = id,
