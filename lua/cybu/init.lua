@@ -41,12 +41,20 @@ cybu.get_bufs = function()
 
   for i, id in ipairs(bids) do
     local name = vim.fn.bufname(id)
-    -- trim buf names
-    if c.opts.style.path == v.style_path.relative then
+
+    -- adjust buf names
+    if c.opts.style.path == v.style_path.absolute then
+      name = vim.fn.fnamemodify(name, ':p')
+    elseif c.opts.style.path == v.style_path.relative then
       name = string.gsub(name, cwd_path, "")
     elseif c.opts.style.path == v.style_path.tail then
       name = vim.fn.fnamemodify(name, ":t")
     end
+
+    if c.opts.style.path_abbreviation == v.style_path_abbreviation.shortened then
+      name = u.shorten_path(name)
+    end
+
     table.insert(bufs, {
       id = id,
       name = name,

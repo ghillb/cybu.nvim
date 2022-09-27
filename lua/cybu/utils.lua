@@ -21,6 +21,14 @@ local load_once = function(f)
   end
 end
 
+local function adjust_absolute_path_head_for_windows(path)
+  return path:sub(1, 1) .. ':' .. path:sub(2, -1)
+end
+
+local function has_windows()
+  return vim.fn.has('win32') == 1
+end
+
 utils.get_icon_or_separator = load_once(function()
   local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
@@ -53,5 +61,19 @@ utils.get_icon_or_separator = load_once(function()
     end
   end
 end)
+
+function utils.shorten_path(path)
+  local Path = require('plenary.path')
+  path = Path:new(path)
+
+  local shortened_path = path:shorten(1)
+
+  if has_windows() and path:is_absolute() then
+    return adjust_absolute_path_head_for_windows(shortened_path)
+  else
+    return shortened_path
+  end
+end
+
 
 return utils

@@ -76,6 +76,7 @@ The table below contains all config keys with some exemplary values.
     },
     style = {
       path = "relative",            -- absolute, relative, tail (filename)
+      path_abbreviation = "none",   -- none, shortened
       border = "single",            -- single, double, rounded, none
       separator = " ",              -- string used as separator
       prefix = "…",                 -- string prefix for truncated paths

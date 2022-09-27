@@ -88,6 +88,7 @@ require("cybu").setup({
   },
   style = {
     path = "relative",            -- absolute, relative, tail (filename only)
+    path_abbreviation = "none",   -- none, shortened
     border = "rounded",           -- single, double, rounded, none
     separator = " ",              -- string used as separator
     prefix = "…",                 -- string used as prefix for truncated paths

@@ -13,6 +13,7 @@ vars.behavior = {
   },
 }
 vars.style_path = { absolute = "absolute", relative = "relative", tail = "tail" }
+vars.style_path_abbreviation = { shortened = "shortened", none = "none" }
 vars.pos_relative_to = { win = "win", editor = "editor", cursor = "cursor" }
 vars.pos_anchor = {
   topleft = function(args)
