@@ -87,7 +87,8 @@ require("cybu").setup({
                                     -- float for relative to win/editor width
   },
   style = {
-    path = "relative",            -- absolute, shortened, relative, tail (filename only)
+    path = "relative",            -- absolute, relative, tail (filename only)
+    path_abbreviation = "none",   -- none, shortened
     border = "rounded",           -- single, double, rounded, none
     separator = " ",              -- string used as separator
     prefix = "…",                 -- string used as prefix for truncated paths
