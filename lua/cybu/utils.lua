@@ -64,9 +64,11 @@ end)
 
 function utils.shorten_path(path)
   local Path = require('plenary.path')
-  local shortened_path = Path:new(path):shorten(1)
+  path = Path:new(path)
 
-  if has_windows() then
+  local shortened_path = path:shorten(1)
+
+  if has_windows() and path:is_absolute() then
     return adjust_absolute_path_head_for_windows(shortened_path)
   else
     return shortened_path
