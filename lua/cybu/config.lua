@@ -13,7 +13,7 @@ local default_config = {
   },
   style = {
     path = "relative",
-    path_abbrievation = "none",
+    path_abbreviation = "none",
     border = "single",
     separator = " ",
     prefix = "…",

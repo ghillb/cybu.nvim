@@ -51,7 +51,7 @@ cybu.get_bufs = function()
       name = vim.fn.fnamemodify(name, ":t")
     end
 
-    if c.opts.style.path_abbrievation == v.style_path_abbrievation.shortened then
+    if c.opts.style.path_abbreviation == v.style_path_abbrevation.shortened then
       name = u.shorten_path(name)
     end
 
