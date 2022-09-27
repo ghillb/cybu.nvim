@@ -49,8 +49,7 @@ cybu.get_bufs = function()
     end
 
     if c.opts.style.path_abbrievation == v.style_path_abbrievation.shortened then
-      local full_path = vim.fn.fnamemodify(name, ':p')
-      name = u.shorten_path(full_path)
+      name = u.shorten_path(name)
     end
 
     table.insert(bufs, {
