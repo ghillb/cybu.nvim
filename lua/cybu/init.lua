@@ -46,10 +46,13 @@ cybu.get_bufs = function()
       name = string.gsub(name, cwd_path, "")
     elseif c.opts.style.path == v.style_path.tail then
       name = vim.fn.fnamemodify(name, ":t")
-    elseif c.opts.style.path == v.style_path.shortened then
+    end
+
+    if c.opts.style.path_abbrievation == v.style_path_abbrievation then
       local full_path = vim.fn.fnamemodify(name, ':p')
       name = u.shorten_path(full_path)
     end
+
     table.insert(bufs, {
       id = id,
       name = name,
