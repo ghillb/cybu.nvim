@@ -44,9 +44,9 @@ cybu.get_bufs = function()
 
     -- adjust buf names
     if c.opts.style.path == v.style_path.absolute then
-      name = vim.fn.fnamemodify(name, ':p')
+      name = vim.fn.fnamemodify(name, ":p")
     elseif c.opts.style.path == v.style_path.relative then
-      name = string.gsub(name, cwd_path, "")
+      name = u.get_relative_path(name, cwd_path)
     elseif c.opts.style.path == v.style_path.tail then
       name = vim.fn.fnamemodify(name, ":t")
     end

@@ -22,11 +22,11 @@ local load_once = function(f)
 end
 
 local function adjust_absolute_path_head_for_windows(path)
-  return path:sub(1, 1) .. ':' .. path:sub(2, -1)
+  return path:sub(1, 1) .. ":" .. path:sub(2, -1)
 end
 
 local function has_windows()
-  return vim.fn.has('win32') == 1
+  return vim.fn.has("win32") == 1
 end
 
 utils.get_icon_or_separator = load_once(function()
@@ -63,7 +63,7 @@ utils.get_icon_or_separator = load_once(function()
 end)
 
 function utils.shorten_path(path)
-  local Path = require('plenary.path')
+  local Path = require("plenary.path")
   path = Path:new(path)
 
   local shortened_path = path:shorten(1)
@@ -75,5 +75,12 @@ function utils.shorten_path(path)
   end
 end
 
+function utils.get_relative_path(path, cwd_path)
+  if has_windows() then
+    cwd_path = cwd_path:gsub("\\", "/")
+    path = path:gsub("\\", "/")
+  end
+  return string.gsub(path, cwd_path, "")
+end
 
 return utils
