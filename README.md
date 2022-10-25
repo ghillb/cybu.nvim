@@ -36,7 +36,7 @@ use({
   "ghillb/cybu.nvim",
   branch = "main", -- timely updates
   -- branch = "v1.x", -- won't receive breaking changes
-  requires = { "kyazdani42/nvim-web-devicons", "nvim-lua/plenary.nvim"}, -- optional for icon support
+  requires = { "nvim-tree/nvim-web-devicons", "nvim-lua/plenary.nvim"}, -- optional for icon support
   config = function()
     local ok, cybu = pcall(require, "cybu")
     if not ok then
@@ -55,7 +55,7 @@ After installing, cycle buffers and display the context window by using the exem
 
 ### Setup with other plugin managers
 
-If you use another plugin manager, install `"ghillb/cybu.nvim"` and optionally `"kyazdani42/nvim-web-devicons"` with it, like you would with any other plugin.
+If you use another plugin manager, install `"ghillb/cybu.nvim"` and optionally `"nvim-tree/nvim-web-devicons"` with it, like you would with any other plugin.
 
 Setup up **_Cybu_** by calling its setup function and placing the respective key bindings, somewhere into your `init.lua`.
 
