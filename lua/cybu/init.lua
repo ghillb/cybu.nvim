@@ -30,6 +30,9 @@ cybu.get_bufs = function()
     if 1 ~= vim.fn.buflisted(id) then
       return false
     end
+    if vim.tbl_contains(c.opts.exclude, vim.api.nvim_buf_get_option(id, "filetype")) then
+      return false
+    end
     return true
   end, vim.api.nvim_list_bufs())
 
