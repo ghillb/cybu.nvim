@@ -335,7 +335,7 @@ cybu.show_cybu_win = function()
   end, c.opts.display_time)
 end
 
-cybu.populate_state = function()
+cybu.populate_state = function(args)
   _state.is_rolling_view = c.opts.behavior.mode.default.view == v.behavior.view_type.rolling
       and _state.mode == v.mode.default
     or c.opts.behavior.mode.last_used.view == v.behavior.view_type.rolling and _state.mode == v.mode.last_used
@@ -354,8 +354,13 @@ cybu.populate_state = function()
   end
   _state.win_height = math.min(_state.bcount, c.opts.position.max_win_height)
   _state.frame_count = math.ceil(_state.bcount / c.opts.position.max_win_height)
-  _state.focus = ((_state.focus or _state.lookup[_state.current_buf]) + _state.increment) % (_state.bcount + 1)
-  _state.focus = (_state.focus ~= 0) and _state.focus or (_state.increment == 1 and 1 or _state.bcount)
+  if args and args.is_auto_cmd_call then
+    _state.is_rolling_view = c.opts.behavior.mode.auto.view == v.behavior.view_type.rolling
+    _state.focus = _state.lookup[_state.current_buf]
+  else
+    _state.focus = ((_state.focus or _state.lookup[_state.current_buf]) + _state.increment) % (_state.bcount + 1)
+    _state.focus = (_state.focus ~= 0) and _state.focus or (_state.increment == 1 and 1 or _state.bcount)
+  end
   _state.frame_nr = math.floor((_state.focus - 1) / _state.win_height) % _state.frame_count + 1
   _state.widths = cybu.get_widths()
   _state.entries = cybu.get_entries()
@@ -374,7 +379,7 @@ cybu.cycle = function(direction, mode)
   if not vim.tbl_contains({ v.direction.next, v.direction.prev }, direction) then
     error("Invalid direction: " .. tostring(direction))
   end
-  if vim.tbl_contains(c.opts.exclude, vim.bo.filetype) or vim.bo.buftype == "nofile" or not vim.bo.buflisted then
+  if u.filter_active() then
     return c.opts.fallback and c.opts.fallback()
   end
   _state.mode = mode or v.mode.default
@@ -386,6 +391,17 @@ cybu.cycle = function(direction, mode)
     cybu.load_target_buf()
   end
   cybu.show_cybu_win()
+end
+
+cybu.auto = function()
+  if not _state.warmup_done or u.filter_active() then
+    _state.warmup_done = true
+    return false
+  end
+
+  cybu.populate_state({ is_auto_cmd_call = true})
+  cybu.show_cybu_win()
+  return true
 end
 
 return cybu

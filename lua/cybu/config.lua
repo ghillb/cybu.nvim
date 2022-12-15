@@ -45,6 +45,9 @@ local default_config = {
         switch = "on_close",
         view = "paging",
       },
+      auto = {
+        view = "rolling",
+      },
     },
   },
   display_time = 750,

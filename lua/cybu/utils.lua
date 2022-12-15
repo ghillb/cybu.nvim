@@ -83,4 +83,10 @@ function utils.get_relative_path(path, cwd_path)
   return string.gsub(path, cwd_path, "")
 end
 
+function utils.filter_active()
+  return vim.tbl_contains(c.opts.exclude, vim.bo.filetype)
+    or vim.bo.buftype == "nofile"
+    or not vim.bo.buflisted
+end
+
 return utils
