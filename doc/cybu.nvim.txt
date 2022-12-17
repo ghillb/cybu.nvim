@@ -104,7 +104,11 @@ The table below contains all config keys with some exemplary values.
           switch = "on_close",      -- immediate, on_close
           view = "paging",          -- paging, rolling
         },
+        auto = {
+          view = "rolling",
+        },
       },
+      show_on_autocmd = false,      -- event to trigger cybu (eg. "BufEnter")
     },
     display_time = 750,             -- time in ms the cybu win is displayed
     exclude = {                     -- filetypes, cybu will not be active

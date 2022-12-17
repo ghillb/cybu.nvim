@@ -1,6 +1,6 @@
 local vars = {}
 
-vars.mode = { default = "default", last_used = "last_used" }
+vars.mode = { default = "default", last_used = "last_used", auto = "auto" }
 vars.direction = { next = "next", prev = "prev" }
 vars.behavior = {
   switch_mode = {

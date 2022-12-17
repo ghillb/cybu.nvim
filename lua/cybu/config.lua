@@ -49,6 +49,7 @@ local default_config = {
         view = "rolling",
       },
     },
+    show_on_autocmd = false,
   },
   display_time = 750,
   exclude = {},

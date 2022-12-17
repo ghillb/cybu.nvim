@@ -20,6 +20,13 @@ cybu.setup = function(user_config)
       vim.notify("Cybu: plenary.nvim needed, but not installed\n", vim.log.levels.ERROR)
     end
   end
+
+  if c.opts.behavior.show_on_autocmd then
+    vim.api.nvim_create_autocmd(c.opts.behavior.show_on_autocmd, {
+      group = vim.api.nvim_create_augroup("cybu#show_on_autocmd", {}),
+      callback = cybu.autocmd,
+    })
+  end
 end
 
 cybu.get_bufs = function()
@@ -379,7 +386,7 @@ cybu.cycle = function(direction, mode)
   if not vim.tbl_contains({ v.direction.next, v.direction.prev }, direction) then
     error("Invalid direction: " .. tostring(direction))
   end
-  if u.filter_active() then
+  if u.is_filter_active() then
     return c.opts.fallback and c.opts.fallback()
   end
   _state.mode = mode or v.mode.default
@@ -393,15 +400,23 @@ cybu.cycle = function(direction, mode)
   cybu.show_cybu_win()
 end
 
-cybu.auto = function()
-  if not _state.warmup_done or u.filter_active() then
-    _state.warmup_done = true
-    return false
+cybu.autocmd = function()
+  local _trigger = function()
+    if u.is_filter_active() then
+      return false
+    end
+
+    local status, _ = pcall(cybu.populate_state, { is_auto_cmd_call = true })
+
+    if not status then
+      -- vim.notify("Cybu: " .. err, vim.log.levels.ERROR) -- TODO: improve logging and error handling
+      return false
+    end
+    cybu.show_cybu_win()
+    return true
   end
 
-  cybu.populate_state({ is_auto_cmd_call = true})
-  cybu.show_cybu_win()
-  return true
+  vim.defer_fn(_trigger, 1) -- NOTE: unhappy with this, but it works
 end
 
 return cybu

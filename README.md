@@ -116,7 +116,11 @@ require("cybu").setup({
         switch = "on_close",      -- immediate, on_close
         view = "paging",          -- paging, rolling
       },
+      auto = {
+        view = "rolling",         -- paging, rolling
+      },
     },
+    show_on_autocmd = false,      -- event to trigger cybu (eg. "BufEnter")
   },
   display_time = 750,             -- time the cybu window is displayed
   exclude = {                     -- filetypes, cybu will not be active
@@ -136,6 +140,7 @@ require("cybu").setup({
 - Various styling & positioning options
 - Exclude filetypes and define fallback
 - Autocmd events `CybuOpen` & `CybuClose`
+- Trigger context window on arbitrary autocommand events
 
 ## Breaking changes
 
