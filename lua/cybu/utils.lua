@@ -86,7 +86,7 @@ end
 function utils.is_filter_active()
   return vim.tbl_contains(c.opts.exclude, vim.bo.filetype)
     or vim.tbl_contains({ "nofile" }, vim.bo.buftype)
-    or not vim.bo.buflisted
+    or (not vim.bo.buflisted and c.opts.filter.unlisted)
 end
 
 return utils

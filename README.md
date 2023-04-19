@@ -128,6 +128,9 @@ require("cybu").setup({
     "fugitive",
     "qf",
   },
+  filter = {
+    unlisted = true,              -- filter & fallback for unlisted buffers
+  },
   fallback = function() end,      -- arbitrary fallback function
                                     -- used in excluded filetypes
 })

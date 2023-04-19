@@ -53,6 +53,9 @@ local default_config = {
   },
   display_time = 750,
   exclude = {},
+  filter = {
+    unlisted = true,
+  },
   fallback = nil,
 }
 

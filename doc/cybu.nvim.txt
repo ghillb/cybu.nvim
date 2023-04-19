@@ -116,6 +116,9 @@ The table below contains all config keys with some exemplary values.
       "fugitive",
       "qf",
     },
+    filter = {
+      unlisted = true,              -- filter & fallback for unlisted buffers
+    },
     fallback = function() end,      -- arbitrary fallback function
                                      -- used in excluded filetypes
   }
