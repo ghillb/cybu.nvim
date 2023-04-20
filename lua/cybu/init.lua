@@ -387,7 +387,7 @@ cybu.cycle = function(direction, mode)
     error("Invalid direction: " .. tostring(direction))
   end
   if u.is_filter_active() then
-    return c.opts.fallback and c.opts.fallback()
+    return c.opts.fallback and c.opts.fallback(direction, mode)
   end
   _state.mode = mode or v.mode.default
   _state.direction = direction
