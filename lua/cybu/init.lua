@@ -208,7 +208,7 @@ end
 
 cybu.get_cybu_buf = function()
   local cybu_buf
-  if not _state.cybu_buf then
+  if not _state.cybu_buf or not vim.api.nvim_buf_is_valid(_state.cybu_buf) then
     cybu_buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_option(cybu_buf, "filetype", "cybu")
     vim.api.nvim_buf_set_option(cybu_buf, "buftype", "nofile")
