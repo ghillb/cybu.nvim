@@ -75,7 +75,8 @@ The table below contains all config keys with some exemplary values.
                                      -- float for relative width to win/editor
     },
     style = {
-      path = "relative",            -- absolute, relative, tail (filename)
+      path = "relative",            -- absolute, relative, tail (filename),
+                                     -- tail_dir (filename & parent dir)
       path_abbreviation = "none",   -- none, shortened
       border = "single",            -- single, double, rounded, none
       separator = " ",              -- string used as separator

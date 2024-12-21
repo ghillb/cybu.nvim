@@ -59,6 +59,10 @@ cybu.get_bufs = function()
       name = u.get_relative_path(name, cwd_path)
     elseif c.opts.style.path == v.style_path.tail then
       name = vim.fn.fnamemodify(name, ":t")
+    elseif c.opts.style.path == v.style_path.tail_dir then
+      local tail = vim.fn.fnamemodify(name, ":t")
+      local dir = vim.fn.fnamemodify(name, ":h:t")
+      name = dir .. "/" .. tail
     end
 
     if c.opts.style.path_abbreviation == v.style_path_abbreviation.shortened then
