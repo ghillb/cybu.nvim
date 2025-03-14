@@ -80,7 +80,9 @@ function utils.get_relative_path(path, cwd_path)
     cwd_path = cwd_path:gsub("\\", "/")
     path = path:gsub("\\", "/")
   end
-  return string.gsub(path, cwd_path, "")
+
+  local Path = require("plenary.path")
+  return Path:new(path):make_relative(cwd_path)
 end
 
 function utils.is_filter_active()
