@@ -42,7 +42,12 @@ utils.get_icon_or_separator = load_once(function()
         return { text = c.opts.style.separator }
       end
 
-      local icon, highlight = devicons.get_icon(filename, string.match(filename, "%a+$"), { default = true })
+      local extension = filename:match("%.([^%.]+)$") or ""
+      local success, icon, highlight = pcall(devicons.get_icon, filename, extension, { default = true })
+      
+      if not success then
+        return { text = c.opts.style.separator }
+      end
 
       -- truncate some ambiwidth icons when plenary is installed
       if has_plenary and c.opts.style.devicons.truncate and (strings.strdisplaywidth(icon) > 1) then

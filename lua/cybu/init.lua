@@ -6,6 +6,20 @@ local infobar = require("cybu.infobar")
 local cybu, _state = {}, {}
 local has_plenary, strings = pcall(require, "plenary.strings")
 
+--- Detect the UI client being used
+-- @return string: 'neovide', 'nvim-qt', 'terminal', or 'unknown'
+local function detect_ui_client()
+  if vim.g.neovide then
+    return "neovide"
+  elseif vim.g.nvim_qt then
+    return "nvim-qt"
+  elseif vim.env.TERM or vim.env.TERM_PROGRAM then
+    return "terminal"
+  else
+    return "unknown"
+  end
+end
+
 --- Setup function to initialize cybu.
 -- Call with config table or without to use default values.
 -- @usage require'cybu'.setup()
@@ -300,6 +314,8 @@ end
 
 cybu.show_cybu_win = function()
   local win_pos = cybu.get_cybu_win_pos()
+  local ui_client = detect_ui_client()
+  
   local win_opts = {
     relative = c.opts.position.relative_to,
     width = _state.widths.win,
@@ -311,6 +327,21 @@ cybu.show_cybu_win = function()
     border = c.opts.style.border,
     focusable = false,
   }
+  
+  -- UI-specific adjustments
+  if ui_client == "neovide" then
+    -- Neovide specific adjustments for better rendering
+    win_opts.zindex = 100
+  elseif ui_client == "nvim-qt" then
+    -- nvim-qt specific adjustments
+    win_opts.zindex = 50
+  elseif ui_client == "terminal" then
+    -- Terminal-specific optimizations
+    if vim.env.TERM_PROGRAM == "WezTerm" or vim.env.TERM_PROGRAM == "Alacritty" then
+      -- Modern terminal emulators handle floating windows better
+      win_opts.zindex = 75
+    end
+  end
 
   local function close_cybu_win()
     pcall(vim.api.nvim_win_close, _state.cybu_win_id, true)
@@ -326,13 +357,25 @@ cybu.show_cybu_win = function()
   end
 
   if not _state.cybu_win_id then
-    _state.cybu_win_id = vim.api.nvim_open_win(_state.cybu_buf, false, win_opts)
-    vim.api.nvim_exec_autocmds("User", { pattern = "CybuOpen" })
-    vim.api.nvim_win_set_option(
-      _state.cybu_win_id,
-      "winhl",
-      string.format("NormalFloat:%s,FloatBorder:%s", c.opts.style.highlights.background, c.opts.style.highlights.border)
-    )
+    local success, win_id = pcall(vim.api.nvim_open_win, _state.cybu_buf, false, win_opts)
+    
+    if success and win_id then
+      _state.cybu_win_id = win_id
+      vim.api.nvim_exec_autocmds("User", { pattern = "CybuOpen" })
+      local win_hl_success = pcall(vim.api.nvim_win_set_option,
+        _state.cybu_win_id,
+        "winhl",
+        string.format("NormalFloat:%s,FloatBorder:%s", c.opts.style.highlights.background, c.opts.style.highlights.border)
+      )
+      if not win_hl_success then
+        vim.notify("Cybu: Failed to set window highlights, continuing with defaults", vim.log.levels.DEBUG)
+      end
+    else
+      -- Floating window failed, fallback to buffer switching only
+      vim.notify("Cybu: Floating window unavailable, switching buffer directly", vim.log.levels.DEBUG)
+      cybu.load_target_buf()
+      return -- Exit early, no UI to show
+    end
   end
 
   if _state.cybu_win_timer then
