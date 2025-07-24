@@ -28,6 +28,8 @@ cybu.setup = function(user_config)
   vim.validate({ user_config = { user_config, "table", true } })
   c.load(user_config)
   _state.has_devicons = pcall(require, "nvim-web-devicons")
+  _state.buffer_touch_times = {}
+  
   if c.opts.style.devicons.enabled and not _state.has_devicons then
     vim.notify("Cybu: nvim-web-devicons enabled, but not installed\n", vim.log.levels.WARN)
     if not has_plenary then
@@ -39,6 +41,25 @@ cybu.setup = function(user_config)
     vim.api.nvim_create_autocmd(c.opts.behavior.show_on_autocmd, {
       group = vim.api.nvim_create_augroup("cybu#show_on_autocmd", {}),
       callback = cybu.autocmd,
+    })
+  end
+  
+  local update_mode = c.opts.behavior.mode.last_used.update_on
+  if update_mode == "cursor_moved" then
+    vim.api.nvim_create_autocmd({"CursorMoved", "CursorMovedI"}, {
+      group = vim.api.nvim_create_augroup("cybu#cursor_tracking", {}),
+      callback = function()
+        local buf = vim.api.nvim_get_current_buf()
+        _state.buffer_touch_times[buf] = vim.fn.localtime()
+      end
+    })
+  elseif update_mode == "text_changed" then
+    vim.api.nvim_create_autocmd({"TextChanged", "TextChangedI"}, {
+      group = vim.api.nvim_create_augroup("cybu#text_tracking", {}),
+      callback = function()
+        local buf = vim.api.nvim_get_current_buf()
+        _state.buffer_touch_times[buf] = vim.fn.localtime()
+      end
     })
   end
 end
@@ -58,9 +79,19 @@ cybu.get_bufs = function()
   end, vim.api.nvim_list_bufs())
 
   if _state.mode == "last_used" then
-    table.sort(bids, function(a, b)
-      return vim.fn.getbufinfo(a)[1].lastused > vim.fn.getbufinfo(b)[1].lastused
-    end)
+    if c.opts.behavior.mode.last_used.update_on == "cursor_moved" or c.opts.behavior.mode.last_used.update_on == "text_changed" then
+      -- Sort by cursor-based touch times
+      table.sort(bids, function(a, b)
+        local touch_a = _state.buffer_touch_times[a] or 0
+        local touch_b = _state.buffer_touch_times[b] or 0
+        return touch_a > touch_b
+      end)
+    else
+      -- Use default vim lastused behavior
+      table.sort(bids, function(a, b)
+        return vim.fn.getbufinfo(a)[1].lastused > vim.fn.getbufinfo(b)[1].lastused
+      end)
+    end
   end
 
   for i, id in ipairs(bids) do

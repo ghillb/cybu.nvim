@@ -44,6 +44,7 @@ local default_config = {
       last_used = {
         switch = "on_close",
         view = "paging",
+        update_on = "buf_enter",
       },
       auto = {
         view = "rolling",

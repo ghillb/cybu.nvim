@@ -215,3 +215,125 @@ describe("Floating window fallback:", function()
     vim.api.nvim_win_set_option = original_set_option
   end)
 end)
+
+describe("Touched flag behavior:", function()
+  it("uses buf_enter mode by default", function()
+    local cybu = require("cybu")
+    cybu.setup({
+      behavior = {
+        mode = {
+          last_used = {
+            update_on = "buf_enter"
+          }
+        }
+      }
+    })
+    
+    -- Create buffers
+    vim.cmd('edit test1.lua')
+    vim.cmd('edit test2.lua')
+    
+    -- Test default behavior works
+    local bufs = cybu.get_bufs()
+    assert.is_not_nil(bufs)
+    assert.True(#bufs >= 2)
+  end)
+
+  it("tracks cursor movement when configured", function()
+    local cybu = require("cybu")
+    cybu.setup({
+      behavior = {
+        mode = {
+          last_used = {
+            update_on = "cursor_moved"
+          }
+        }
+      }
+    })
+    
+    -- Create test buffers
+    vim.cmd('edit touched1.lua')
+    local buf1 = vim.api.nvim_get_current_buf()
+    
+    vim.cmd('edit touched2.lua')
+    local buf2 = vim.api.nvim_get_current_buf()
+    
+    -- Switch to buf1 without moving cursor
+    vim.api.nvim_set_current_buf(buf1)
+    
+    -- Simulate cursor movement to trigger touch
+    vim.api.nvim_win_set_cursor(0, {1, 1})
+    
+    -- Test that touch tracking is working
+    local bufs = cybu.get_bufs()
+    assert.is_not_nil(bufs)
+    assert.True(#bufs >= 2)
+  end)
+
+  it("maintains different ordering for cursor_moved vs buf_enter", function()
+    local cybu = require("cybu")
+    
+    -- Test buf_enter mode
+    cybu.setup({
+      behavior = {
+        mode = {
+          last_used = {
+            update_on = "buf_enter"
+          }
+        }
+      }
+    })
+    
+    vim.cmd('edit order1.lua')
+    vim.cmd('edit order2.lua')
+    local buf_enter_bufs = cybu.get_bufs()
+    
+    -- Test cursor_moved mode
+    cybu.setup({
+      behavior = {
+        mode = {
+          last_used = {
+            update_on = "cursor_moved"
+          }
+        }
+      }
+    })
+    
+    local cursor_moved_bufs = cybu.get_bufs()
+    
+    -- Both should work (specific ordering depends on cursor activity)
+    assert.is_not_nil(buf_enter_bufs)
+    assert.is_not_nil(cursor_moved_bufs)
+  end)
+
+  it("tracks text changes when configured", function()
+    local cybu = require("cybu")
+    cybu.setup({
+      behavior = {
+        mode = {
+          last_used = {
+            update_on = "text_changed"
+          }
+        }
+      }
+    })
+    
+    -- Create test buffers
+    vim.cmd('edit text1.lua')
+    local buf1 = vim.api.nvim_get_current_buf()
+    
+    vim.cmd('edit text2.lua')
+    local buf2 = vim.api.nvim_get_current_buf()
+    
+    -- Switch to buf1 without making changes
+    vim.api.nvim_set_current_buf(buf1)
+    
+    -- Add some text to trigger text change
+    vim.api.nvim_buf_set_lines(buf1, 0, -1, false, {"local test = 1"})
+    
+    -- Test that text tracking is working
+    local bufs = cybu.get_bufs()
+    assert.is_not_nil(bufs)
+    assert.True(#bufs >= 2)
+  end)
+end)

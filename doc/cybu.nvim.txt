@@ -104,6 +104,7 @@ The table below contains all config keys with some exemplary values.
         last_used = {
           switch = "on_close",      -- immediate, on_close
           view = "paging",          -- paging, rolling
+          update_on = "buf_enter",  -- buf_enter, cursor_moved, text_changed
         },
         auto = {
           view = "rolling",
