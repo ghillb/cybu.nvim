@@ -52,6 +52,9 @@ local default_config = {
     },
     show_on_autocmd = false,
   },
+  experimental = {
+    buffer_provider = nil,
+  },
   display_time = 750,
   exclude = {},
   filter = {

@@ -5,8 +5,10 @@ CybuLastusedPrev	cybu.nvim.txt	/*CybuLastusedPrev*
 CybuNext	cybu.nvim.txt	/*CybuNext*
 CybuPrev	cybu.nvim.txt	/*CybuPrev*
 cybu-autocmds	cybu.nvim.txt	/*cybu-autocmds*
+cybu-buffer-provider	cybu.nvim.txt	/*cybu-buffer-provider*
 cybu-commands	cybu.nvim.txt	/*cybu-commands*
 cybu-config	cybu.nvim.txt	/*cybu-config*
+cybu-experimental	cybu.nvim.txt	/*cybu-experimental*
 cybu-lua	cybu.nvim.txt	/*cybu-lua*
 cybu-mappings	cybu.nvim.txt	/*cybu-mappings*
 cybu-quickstart	cybu.nvim.txt	/*cybu-quickstart*

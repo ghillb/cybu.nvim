@@ -8,7 +8,8 @@ TABLE OF CONTENTS                                              *cybu.nvim.toc*
 4.  Commands                   (|cybu-commands|)
 5.  Mappings                   (|cybu-mappings|)
 6.  Lua functions              (|cybu-lua|)
-7.  Auto commands              (|cybu-autocmds|)
+7.  Experimental features      (|cybu-experimental|)
+8.  Auto commands              (|cybu-autocmds|)
 
 
 ================================================================================
@@ -209,6 +210,72 @@ cybu.cycle({direction}, [{mode}])                                           *cyb
 >
     require("cybu").cycle("prev", "last_used")
 <
+
+================================================================================
+EXPERIMENTAL FEATURES                                      *cybu-experimental*
+
+Experimental features may change or be removed in future versions.
+
+                                                      *cybu-buffer-provider*
+Buffer Provider ~
+
+You can integrate cybu with other buffer management plugins by providing
+a custom buffer provider function:
+>
+    require("cybu").setup({
+      experimental = {
+        buffer_provider = function()
+          -- Return table of {bufnr=number, filename=string} objects
+          return your_custom_buffer_list
+        end
+      }
+    })
+<
+
+Example grapple.nvim integration:
+>
+    local function grapple_provider()
+      local grapple = require("grapple")
+      local items = {}
+      for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+        if grapple.exists({ buffer = bufnr }) then
+          table.insert(items, {
+            bufnr = bufnr,
+            filename = vim.api.nvim_buf_get_name(bufnr)
+          })
+        end
+      end
+      return items
+    end
+    
+    require("cybu").setup({
+      experimental = { buffer_provider = grapple_provider }
+    })
+<
+
+Example harpoon.nvim integration:
+>
+    local function harpoon_provider()
+      local harpoon = require("harpoon")
+      local items = {}
+      for _, item in ipairs(harpoon:list().items) do
+        local bufnr = vim.fn.bufnr(item.value)
+        if bufnr ~= -1 then
+          table.insert(items, {
+            bufnr = bufnr,
+            filename = item.value
+          })
+        end
+      end
+      return items
+    end
+    
+    require("cybu").setup({
+      experimental = { buffer_provider = harpoon_provider }
+    })
+<
+
+See examples/buffer_providers.lua for more examples.
 
 ================================================================================
 AUTOCOMMANDS                                                   *cybu-autocmds*

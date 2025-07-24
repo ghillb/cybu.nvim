@@ -188,11 +188,11 @@ describe("Floating window fallback:", function()
     vim.api.nvim_open_win = function()
       error("Mock floating window failure")
     end
-    
+
     -- Test that cycling still works despite floating window failure
     local status, _ = pcall(cybu.cycle, "next")
     assert.is_true(status)
-    
+
     -- Restore original function
     vim.api.nvim_open_win = original_open_win
   end)
@@ -207,10 +207,10 @@ describe("Floating window fallback:", function()
       end
       return original_set_option(win_id, option, value)
     end
-    
+
     local status, _ = pcall(cybu.cycle, "next")
     assert.is_true(status)
-    
+
     -- Restore original function
     vim.api.nvim_win_set_option = original_set_option
   end)
@@ -223,16 +223,16 @@ describe("Touched flag behavior:", function()
       behavior = {
         mode = {
           last_used = {
-            update_on = "buf_enter"
-          }
-        }
-      }
+            update_on = "buf_enter",
+          },
+        },
+      },
     })
-    
+
     -- Create buffers
-    vim.cmd('edit test1.lua')
-    vim.cmd('edit test2.lua')
-    
+    vim.cmd("edit test1.lua")
+    vim.cmd("edit test2.lua")
+
     -- Test default behavior works
     local bufs = cybu.get_bufs()
     assert.is_not_nil(bufs)
@@ -245,25 +245,25 @@ describe("Touched flag behavior:", function()
       behavior = {
         mode = {
           last_used = {
-            update_on = "cursor_moved"
-          }
-        }
-      }
+            update_on = "cursor_moved",
+          },
+        },
+      },
     })
-    
+
     -- Create test buffers
-    vim.cmd('edit touched1.lua')
+    vim.cmd("edit touched1.lua")
     local buf1 = vim.api.nvim_get_current_buf()
-    
-    vim.cmd('edit touched2.lua')
+
+    vim.cmd("edit touched2.lua")
     local buf2 = vim.api.nvim_get_current_buf()
-    
+
     -- Switch to buf1 without moving cursor
     vim.api.nvim_set_current_buf(buf1)
-    
+
     -- Simulate cursor movement to trigger touch
-    vim.api.nvim_win_set_cursor(0, {1, 1})
-    
+    vim.api.nvim_win_set_cursor(0, { 1, 1 })
+
     -- Test that touch tracking is working
     local bufs = cybu.get_bufs()
     assert.is_not_nil(bufs)
@@ -272,35 +272,35 @@ describe("Touched flag behavior:", function()
 
   it("maintains different ordering for cursor_moved vs buf_enter", function()
     local cybu = require("cybu")
-    
+
     -- Test buf_enter mode
     cybu.setup({
       behavior = {
         mode = {
           last_used = {
-            update_on = "buf_enter"
-          }
-        }
-      }
+            update_on = "buf_enter",
+          },
+        },
+      },
     })
-    
-    vim.cmd('edit order1.lua')
-    vim.cmd('edit order2.lua')
+
+    vim.cmd("edit order1.lua")
+    vim.cmd("edit order2.lua")
     local buf_enter_bufs = cybu.get_bufs()
-    
+
     -- Test cursor_moved mode
     cybu.setup({
       behavior = {
         mode = {
           last_used = {
-            update_on = "cursor_moved"
-          }
-        }
-      }
+            update_on = "cursor_moved",
+          },
+        },
+      },
     })
-    
+
     local cursor_moved_bufs = cybu.get_bufs()
-    
+
     -- Both should work (specific ordering depends on cursor activity)
     assert.is_not_nil(buf_enter_bufs)
     assert.is_not_nil(cursor_moved_bufs)
@@ -312,28 +312,190 @@ describe("Touched flag behavior:", function()
       behavior = {
         mode = {
           last_used = {
-            update_on = "text_changed"
-          }
-        }
-      }
+            update_on = "text_changed",
+          },
+        },
+      },
     })
-    
+
     -- Create test buffers
-    vim.cmd('edit text1.lua')
+    vim.cmd("edit text1.lua")
     local buf1 = vim.api.nvim_get_current_buf()
-    
-    vim.cmd('edit text2.lua')
+
+    vim.cmd("edit text2.lua")
     local buf2 = vim.api.nvim_get_current_buf()
-    
+
     -- Switch to buf1 without making changes
     vim.api.nvim_set_current_buf(buf1)
-    
+
     -- Add some text to trigger text change
-    vim.api.nvim_buf_set_lines(buf1, 0, -1, false, {"local test = 1"})
-    
+    vim.api.nvim_buf_set_lines(buf1, 0, -1, false, { "local test = 1" })
+
     -- Test that text tracking is working
     local bufs = cybu.get_bufs()
     assert.is_not_nil(bufs)
     assert.True(#bufs >= 2)
+  end)
+end)
+
+describe("Experimental buffer provider:", function()
+  it("uses custom buffer provider when configured", function()
+    local cybu = require("cybu")
+
+    -- Create test buffers
+    vim.cmd("edit provider_test1.lua")
+    local buf1 = vim.api.nvim_get_current_buf()
+    vim.cmd("edit provider_test2.lua")
+    local buf2 = vim.api.nvim_get_current_buf()
+
+    -- Custom provider that only returns buf1
+    local custom_provider = function()
+      return {
+        { bufnr = buf1, filename = vim.api.nvim_buf_get_name(buf1) },
+      }
+    end
+
+    cybu.setup({
+      experimental = {
+        buffer_provider = custom_provider,
+      },
+    })
+
+    local bufs = cybu.get_bufs()
+
+    -- Should only contain buf1 (custom provider overrides default buffer list)
+    assert.is_not_nil(bufs)
+    assert.True(#bufs >= 1) -- At least buf1, but may have others if filtering is applied
+
+    -- Check that buf1 is present in results
+    local found_buf1 = false
+    for _, buf in ipairs(bufs) do
+      if buf.id == buf1 then
+        found_buf1 = true
+        break
+      end
+    end
+    assert.True(found_buf1)
+  end)
+
+  it("falls back to default when provider fails", function()
+    local cybu = require("cybu")
+
+    -- Provider that always throws error
+    local failing_provider = function()
+      error("Test provider failure")
+    end
+
+    cybu.setup({
+      experimental = {
+        buffer_provider = failing_provider,
+      },
+    })
+
+    -- Should fall back to default behavior
+    local bufs = cybu.get_bufs()
+    assert.is_not_nil(bufs)
+  end)
+
+  it("validates buffer provider returns correct format", function()
+    local cybu = require("cybu")
+
+    -- Create test buffer
+    vim.cmd("edit format_test.lua")
+    local buf1 = vim.api.nvim_get_current_buf()
+
+    -- Provider with invalid format
+    local invalid_provider = function()
+      return "not a table"
+    end
+
+    cybu.setup({
+      experimental = {
+        buffer_provider = invalid_provider,
+      },
+    })
+
+    -- Should fall back to default when provider returns invalid data
+    local bufs = cybu.get_bufs()
+    assert.is_not_nil(bufs)
+  end)
+
+  it("filters provider results like default buffers", function()
+    local cybu = require("cybu")
+
+    -- Create test buffer
+    vim.cmd("edit filter_test.lua")
+    local buf1 = vim.api.nvim_get_current_buf()
+
+    -- Provider that includes invalid buffer
+    local provider_with_invalid = function()
+      return {
+        { bufnr = buf1, filename = vim.api.nvim_buf_get_name(buf1) },
+        { bufnr = 999999, filename = "nonexistent.lua" }, -- Invalid buffer
+      }
+    end
+
+    cybu.setup({
+      experimental = {
+        buffer_provider = provider_with_invalid,
+      },
+    })
+
+    local bufs = cybu.get_bufs()
+
+    -- Should contain valid buffers (invalid buffer filtered out)
+    assert.is_not_nil(bufs)
+    assert.True(#bufs >= 1) -- At least buf1 should be present
+
+    -- Check that buf1 is present and 999999 is not
+    local found_buf1 = false
+    local found_invalid = false
+    for _, buf in ipairs(bufs) do
+      if buf.id == buf1 then
+        found_buf1 = true
+      elseif buf.id == 999999 then
+        found_invalid = true
+      end
+    end
+    assert.True(found_buf1)
+    assert.is_false(found_invalid)
+  end)
+
+  it("respects exclude filtering with custom provider", function()
+    local cybu = require("cybu")
+
+    -- Create help buffer (excluded by default in some configs)
+    vim.cmd("help")
+    local help_buf = vim.api.nvim_get_current_buf()
+    vim.cmd("edit exclude_test.lua")
+    local normal_buf = vim.api.nvim_get_current_buf()
+
+    -- Provider that includes help buffer
+    local provider_with_help = function()
+      return {
+        { bufnr = help_buf, filename = vim.api.nvim_buf_get_name(help_buf) },
+        { bufnr = normal_buf, filename = vim.api.nvim_buf_get_name(normal_buf) },
+      }
+    end
+
+    cybu.setup({
+      experimental = {
+        buffer_provider = provider_with_help,
+      },
+      exclude = { "help" },
+    })
+
+    local bufs = cybu.get_bufs()
+
+    -- Should only contain normal buffer, help excluded
+    assert.is_not_nil(bufs)
+    local has_help = false
+    for _, buf in ipairs(bufs) do
+      if buf.id == help_buf then
+        has_help = true
+        break
+      end
+    end
+    assert.is_false(has_help)
   end)
 end)

@@ -168,6 +168,26 @@ require("cybu").setup({
 })
 ```
 
+### Experimental: Custom Buffer Providers
+
+**⚠️ Experimental Feature**: This feature is experimental and the API may change in future versions. Use with caution in production environments.
+
+You can integrate cybu with other buffer management plugins like [grapple.nvim](https://github.com/cbochs/grapple.nvim) or [harpoon.nvim](https://github.com/ThePrimeagen/harpoon) by providing a custom buffer provider function:
+
+```lua
+require("cybu").setup({
+  experimental = {
+    buffer_provider = function()
+      -- Return table of buffer objects: {{bufnr=1, filename="file.lua"}, ...}
+      -- Logic to fetch buffers from your preferred source
+      return custom_buffer_list
+    end
+  }
+})
+```
+
+See `examples/buffer_providers.lua` for working examples with grapple.nvim, harpoon.nvim, and advanced usage patterns.
+
 ## Breaking changes
 
 If breaking changes (will be kept to a minimum) are of no concern to you, use the `main` branch. Otherwise you can use the version pinned branches, e.g. `v1.x`. These branches will only receive bug fixes and other non-breaking changes.

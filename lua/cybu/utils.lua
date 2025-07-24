@@ -44,7 +44,7 @@ utils.get_icon_or_separator = load_once(function()
 
       local extension = filename:match("%.([^%.]+)$") or ""
       local success, icon, highlight = pcall(devicons.get_icon, filename, extension, { default = true })
-      
+
       if not success then
         return { text = c.opts.style.separator }
       end

@@ -29,7 +29,7 @@ cybu.setup = function(user_config)
   c.load(user_config)
   _state.has_devicons = pcall(require, "nvim-web-devicons")
   _state.buffer_touch_times = {}
-  
+
   if c.opts.style.devicons.enabled and not _state.has_devicons then
     vim.notify("Cybu: nvim-web-devicons enabled, but not installed\n", vim.log.levels.WARN)
     if not has_plenary then
@@ -43,23 +43,23 @@ cybu.setup = function(user_config)
       callback = cybu.autocmd,
     })
   end
-  
+
   local update_mode = c.opts.behavior.mode.last_used.update_on
   if update_mode == "cursor_moved" then
-    vim.api.nvim_create_autocmd({"CursorMoved", "CursorMovedI"}, {
+    vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
       group = vim.api.nvim_create_augroup("cybu#cursor_tracking", {}),
       callback = function()
         local buf = vim.api.nvim_get_current_buf()
         _state.buffer_touch_times[buf] = vim.fn.localtime()
-      end
+      end,
     })
   elseif update_mode == "text_changed" then
-    vim.api.nvim_create_autocmd({"TextChanged", "TextChangedI"}, {
+    vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
       group = vim.api.nvim_create_augroup("cybu#text_tracking", {}),
       callback = function()
         local buf = vim.api.nvim_get_current_buf()
         _state.buffer_touch_times[buf] = vim.fn.localtime()
-      end
+      end,
     })
   end
 end
@@ -68,33 +68,64 @@ cybu.get_bufs = function()
   local bufs = {}
   _state.lookup = {}
   local cwd_path = vim.fn.getcwd() .. "/"
-  local bids = vim.tbl_filter(function(id)
-    if 1 ~= vim.fn.buflisted(id) then
-      return false
+
+  local filtered_bids
+
+  -- use experimental buffer provider if configured
+  if c.opts.experimental.buffer_provider and type(c.opts.experimental.buffer_provider) == "function" then
+    local success, provider_bufs = pcall(c.opts.experimental.buffer_provider)
+    if success and provider_bufs and type(provider_bufs) == "table" then
+      local bids = {}
+      for _, buf_info in ipairs(provider_bufs) do
+        if buf_info.bufnr and vim.api.nvim_buf_is_valid(buf_info.bufnr) then
+          -- apply same filtering as default provider
+          if vim.fn.buflisted(buf_info.bufnr) == 1 then
+            if not vim.tbl_contains(c.opts.exclude, vim.api.nvim_buf_get_option(buf_info.bufnr, "filetype")) then
+              table.insert(bids, buf_info.bufnr)
+            end
+          end
+        end
+      end
+
+      filtered_bids = bids
+    else
+      vim.notify("Cybu: experimental buffer_provider failed, falling back to default", vim.log.levels.WARN)
+      filtered_bids = nil
     end
-    if vim.tbl_contains(c.opts.exclude, vim.api.nvim_buf_get_option(id, "filetype")) then
-      return false
-    end
-    return true
-  end, vim.api.nvim_list_bufs())
+  end
+
+  if not filtered_bids then
+    filtered_bids = vim.tbl_filter(function(id)
+      if 1 ~= vim.fn.buflisted(id) then
+        return false
+      end
+      if vim.tbl_contains(c.opts.exclude, vim.api.nvim_buf_get_option(id, "filetype")) then
+        return false
+      end
+      return true
+    end, vim.api.nvim_list_bufs())
+  end
 
   if _state.mode == "last_used" then
-    if c.opts.behavior.mode.last_used.update_on == "cursor_moved" or c.opts.behavior.mode.last_used.update_on == "text_changed" then
-      -- Sort by cursor-based touch times
-      table.sort(bids, function(a, b)
+    if
+      c.opts.behavior.mode.last_used.update_on == "cursor_moved"
+      or c.opts.behavior.mode.last_used.update_on == "text_changed"
+    then
+      -- sort by cursor-based touch times
+      table.sort(filtered_bids, function(a, b)
         local touch_a = _state.buffer_touch_times[a] or 0
         local touch_b = _state.buffer_touch_times[b] or 0
         return touch_a > touch_b
       end)
     else
-      -- Use default vim lastused behavior
-      table.sort(bids, function(a, b)
+      -- use default vim lastused behavior
+      table.sort(filtered_bids, function(a, b)
         return vim.fn.getbufinfo(a)[1].lastused > vim.fn.getbufinfo(b)[1].lastused
       end)
     end
   end
 
-  for i, id in ipairs(bids) do
+  for i, id in ipairs(filtered_bids) do
     local name = vim.fn.bufname(id)
 
     -- adjust buf names
@@ -346,7 +377,7 @@ end
 cybu.show_cybu_win = function()
   local win_pos = cybu.get_cybu_win_pos()
   local ui_client = detect_ui_client()
-  
+
   local win_opts = {
     relative = c.opts.position.relative_to,
     width = _state.widths.win,
@@ -358,7 +389,7 @@ cybu.show_cybu_win = function()
     border = c.opts.style.border,
     focusable = false,
   }
-  
+
   -- UI-specific adjustments
   if ui_client == "neovide" then
     -- Neovide specific adjustments for better rendering
@@ -389,14 +420,19 @@ cybu.show_cybu_win = function()
 
   if not _state.cybu_win_id then
     local success, win_id = pcall(vim.api.nvim_open_win, _state.cybu_buf, false, win_opts)
-    
+
     if success and win_id then
       _state.cybu_win_id = win_id
       vim.api.nvim_exec_autocmds("User", { pattern = "CybuOpen" })
-      local win_hl_success = pcall(vim.api.nvim_win_set_option,
+      local win_hl_success = pcall(
+        vim.api.nvim_win_set_option,
         _state.cybu_win_id,
         "winhl",
-        string.format("NormalFloat:%s,FloatBorder:%s", c.opts.style.highlights.background, c.opts.style.highlights.border)
+        string.format(
+          "NormalFloat:%s,FloatBorder:%s",
+          c.opts.style.highlights.background,
+          c.opts.style.highlights.border
+        )
       )
       if not win_hl_success then
         vim.notify("Cybu: Failed to set window highlights, continuing with defaults", vim.log.levels.DEBUG)
